@@ -1,0 +1,201 @@
+1.	Server class
+	The class was defined in file called server.h and implemented in server.h
+	This class is a abstract class.It be inherted by httpclass.
+	
+	------------------- member fucntion ------------------------------
+	* public :
+
+	Server();
+		default constructor.
+	virtual ~Server();
+		virtual deconstructor.
+	virtual bool Init(int sockfd = -1, struct sockaddr_in *addr_ptr = NULL);
+		Iinitial function.To initialize member variable.
+		input: sockfd  : server socket description
+			   addr_ptr: server address struct pointer.
+		return: if success, return true.
+	virtual void Start() = 0;
+		start to service client's request.
+	virtual void SetSocketfd(int sockfd) = 0;
+		set socket file description.
+		input : sockfd is used to set socket file description.
+	vitual struct sockaddr_in *GetSockAddress() = 0;
+		get socket address pointer.
+		return: socket address pointer.
+	
+	* private :
+		Server(const Server &);
+		void operate = (const Server &);
+
+	----------------- member variable ----------------------------------
+	* protected :
+
+		int _sockfd;					//  server socket description
+		struct sockaddr_in *_addr_ptr	//  server address struct pointer
+
+
+
+2.	HttpServer class
+	The class was defined in server.h and implemented in httpserver.cc.
+	This class inhert from Server class.It is used to service http type requestion.
+	
+	------------------------ member function ---------------------------------------
+	* public :
+	
+	HttpServer();
+		default constructor.
+	virtual ~HttpServer();
+		virtual deconstructor.
+	virtual bool Init(int sockfd = -1, struct sockaddr_in *addr_ptr = NULL);
+		Iinitial function.To initialize member variable.
+		input: sockfd  : server socket description
+			   addr_ptr: server address struct pointer.
+		return: if success, return true.
+	virtual void Start();
+		start to service client's request.
+	virtual void SetSocketfd(int sockfd);
+		set socket file description.
+		input : sockfd is used to set socket file description.
+	vitual struct sockaddr_in *GetSockAddress();
+		get socket address pointer.
+		return: socket address pointer.
+	 void SetReuseAddr(bool flag);
+		set socket level option SO_REUSEADDR is opened, or not.
+		input: flag: if flag is true, opened the option. Otherwise, close the option.
+	Database *GetDatabase();
+		get database pointer.
+		return: database pointer.
+	bool IsReuseAddr();
+		check socket level option SO_REUSEADDR is opened, or not.
+		return: if socket level option SO_REUSEADDR is opened, return true.
+	void Get();
+		resopnd http's Get requestion.
+	void Post();
+		respond http's Post requestion.
+
+	* private :
+		HttpServer(HttpServer &);
+		void operator = (const HttpServer &);
+
+		int Socket();
+			create a socket.
+			return: if success, return socket.
+		bool Bind();
+			make address relate to socket.
+			return: if success, return true.
+		bool Listen(const int qlen);
+			monitor socket.Monitoring queue's length is equal to qlen.
+			input: qlen: a queue's len, means unfinished connection number.
+			return: if success, return true.
+
+	------------------------- member variable ----------------------------------------
+	* protected :
+	
+	======================== inhert from Server class ================================
+		int _sockfd;					//  server socket description
+		struct sockaddr_in *_addr_ptr;	//  server address struct pointer.
+
+	======================== HttpServer class ========================================
+		socklen_t _isreuseaddr;			//  socket level option SO_REUSEADDR
+		SimpleMySql *_spmysql_ptr;		//  database pointer.
+
+
+//  ------------------------- unuse ---------------------------------------------------
+//3.	Database class 
+//	The class is defined in database.h and is implement in database.cc.
+//	This is all database class's parent class. 
+//
+//	-------------------------- member function ----------------------------------------
+//	* public :
+//
+//	virtual ~Database()
+//		virtual deconstructor.
+//	static Database *GetInstance();
+//		A static function to get unique Database instance.
+//		return: if success, return Database pointer, otherwise, return NULL.
+//	virtual bool Query();
+//		query database.
+//		return: if success, return true.
+//	virtual bool Insert();
+//		Insert a data to database.
+//		return: if success, return true.
+//	
+//	* private :
+//
+//	Database();
+//		defualt constructor.
+//	Database(const Database &);
+//	void operator = (const Database &);
+//	bool Init();
+//		initialize database.
+//		if success, return true.
+//	------------------------- member variable -----------------------------------------
+//
+//	* protect :
+//		std::string _name;			//  login name
+//		std::string _password;		//  login password
+//		std::string _db;			//  database used soon
+//	
+//	* private :
+//
+//	static Database *s_database_ptr;	//  unique database instance's pointer
+
+
+3.	SimpleMySql class
+	The class is defined in database.h and is implemented in simplemysql.cc.
+	This class inhert from Database class and package MYSQL's operation.
+
+	--------------------------- member function ---------------------------------------
+	* public :
+
+	virtual ~SimpleMySql();
+		virtual deconstructor.
+	bool Init()
+		initial function.
+		return: if success, return true.
+	static SimpleMySql *GetInstance();
+		it is a static function to get unique SimpleMySql instance variable's pointer.
+		return: if success, return unique SimpleMySql instance variable's pointer.
+				Otherwise, return NULL.
+	bool Query();
+		query database.
+		return: if success, return true.
+	bool Insert();
+		Insert a data to database.
+		return: if success, return true.
+	string GetLoginName();
+		get mysql login name.
+		return: login name.
+	string GetLoginPassword();
+		get mysql login password.
+		return: login password.
+	string GetLoginDatabase();
+		get mysql login database.
+		return: login database.
+	string GetServer();
+		get mysql mysql server host name.
+		return: mysql server host name.
+
+	* private :
+
+	SimpleMySql();
+		default constructor.
+	SimpleMySql(const SimpleMysql);
+	void operator = (const SimpleMySql &);
+	bool Init();
+		initialize database.
+		return: if success, return true.
+
+	-------------------------- member variable -------------------------------------------	
+	* private :
+		static SimpleMySql *s_simplemysql_ptr;	//  SimpleMySql pointer.
+										//  point to unique SimpleMyql instance.
+										//  because a program should only operate a database.
+		MYSQL *_mysql_ptr;				//  MYSQL pointer. point to a unique mysql database.
+		std::string _name;				//  login name
+		std::string _password;			//  login password
+		std::string _db;				//  database used soon
+		std::string _server				//  the server host name.
+										//  allow that the value is localhot
+		
+
