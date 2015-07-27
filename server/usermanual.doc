@@ -22,7 +22,18 @@
 	vitual struct sockaddr_in *GetSockAddress() = 0;
 		get socket address pointer.
 		return: socket address pointer.
-	
+	virtual bool Register(std::string name,
+						  std::string password);
+		registering at server.
+		input: name: account's name
+			   password: account's password
+		return: if success, return true.
+	virtual bool Enroll(std::string name,
+						std::string password);
+		Enroll account in server.
+		input: name: account's name
+			   password: account's password
+		return: if success, return true.
 	* private :
 		Server(const Server &);
 		void operate = (const Server &);
@@ -68,10 +79,28 @@
 	bool IsReuseAddr();
 		check socket level option SO_REUSEADDR is opened, or not.
 		return: if socket level option SO_REUSEADDR is opened, return true.
-	void Get();
+	void Get(const std::string url);
 		resopnd http's Get requestion.
-	void Post();
+		inupt: url: relative to the root directory of the server
+	void Post(const std::string url);
 		respond http's Post requestion.
+	bool Handle(string request);
+		handle client/browser 's request.
+		input: request: client/browser's request context.
+		return: if success, return true.
+	bool Handle(char *request);
+		handle client/browser 's request.
+		input: request: client/browser's request context.
+		return: if success, return true.
+	string GetURL(const string request);
+		acquire URL from http request.
+		input: request: http request
+		return: if success, return URL, otherwise, return null string.
+	bool GetURL(const string request, string &url);
+		acquire URL from http request.
+		input: request: http request
+		output:	url: return url, if fail, return null string.
+		return: if success, return true.
 
 	* private :
 		HttpServer(HttpServer &);

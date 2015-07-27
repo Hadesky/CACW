@@ -8,6 +8,7 @@
 #ifndef _SIMPLEMYSQL_H
 #define _SIMPLEMYSQL_H
 
+#include <boost/shared_ptr.hpp>
 #include <mysql/mysql.h>
 #include <string>
 
@@ -23,12 +24,20 @@ class SimpleMySql {
 public :
 	virtual ~SimpleMySql();
 //	static SimpleMySql *GetInstance();
-	static SimpleMySql *GetInstance(string user,
-									string pwd,
-									string db,
-									string server);
-	bool Query();
-	bool Insert();
+	static boost::shared_ptr<SimpleMySql> 
+		GetInstance(string user,
+					string pwd,
+					string db,
+					string server);
+	bool Query(const string str);
+	bool Insert(const string table, const string field, const string value);
+	bool Search(const string table, const string field, const string value);
+	bool Search(const string table, const string condition);
+//	bool Alter(const string str);
+	bool Update(const string table,
+				const string field,
+				const string value,
+				const string condition);
 //	void SetLoginName(string name);
 //	void SetLoginName(char *name);
 //	void SetLoginPassword(string pwd);
@@ -51,7 +60,7 @@ private :
 			  string db,
 			  string server);
 private :
-	static SimpleMySql *s_simplemysql_ptr;
+	static boost::shared_ptr<SimpleMySql> s_simplemysql_ptr;
 	MYSQL *_mysql_ptr;
 	string _user;
 	string _password;
