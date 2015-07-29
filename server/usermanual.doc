@@ -34,6 +34,22 @@
 		input: name: account's name
 			   password: account's password
 		return: if success, return true.
+	virtual void SetRegister(RegisterAction *ract_ptr) = 0;
+		Set rigister's action.
+		input: ract_ptr: register's action performer.
+
+	virtual void SetEnroll(EnrollAction *eact_ptr) = 0;
+		Set enroll's action.
+		input: ract_ptr: enroll's action performer.
+
+	virtual RegisterAction *GetRegister() const = 0;
+		Get rigister's action.
+		return: register's action performer.
+
+	virtual EnrollAction *GetEnroll() const = 0;
+		Get enroll's action.
+		input: ract_ptr: enroll's action performer.
+
 	* private :
 		Server(const Server &);
 		void operate = (const Server &);
@@ -41,8 +57,10 @@
 	----------------- member variable ----------------------------------
 	* protected :
 
-		int _sockfd;					//  server socket description
-		struct sockaddr_in *_addr_ptr	//  server address struct pointer
+		int _sockfd;						//  server socket description
+		struct sockaddr_in *_addr_ptr		//  server address struct pointer
+		RegisterAction *_registeraction_ptr;//  register's action pointer.
+		EnrollAction *_enrollaction_ptr;	//  enroll's action pointer.
 
 
 
@@ -55,52 +73,92 @@
 	
 	HttpServer();
 		default constructor.
+
 	virtual ~HttpServer();
 		virtual deconstructor.
+
 	virtual bool Init(int sockfd = -1, struct sockaddr_in *addr_ptr = NULL);
 		Iinitial function.To initialize member variable.
 		input: sockfd  : server socket description
 			   addr_ptr: server address struct pointer.
 		return: if success, return true.
+
 	virtual void Start();
 		start to service client's request.
 	virtual void SetSocketfd(int sockfd);
 		set socket file description.
 		input : sockfd is used to set socket file description.
+	
 	vitual struct sockaddr_in *GetSockAddress();
 		get socket address pointer.
 		return: socket address pointer.
-	 void SetReuseAddr(bool flag);
+	
+	virtual bool Register(std::string name,
+						  std::string password);
+		registering at server.
+		input: name: account's name
+			   password: account's password
+		return: if success, return true.
+
+	virtual bool Enroll(std::string name,
+						std::string password);
+		Enroll account in server.
+		input: name: account's name
+			   password: account's password
+		return: if success, return true.
+
+	void SetReuseAddr(bool flag);
 		set socket level option SO_REUSEADDR is opened, or not.
 		input: flag: if flag is true, opened the option. Otherwise, close the option.
-	Database *GetDatabase();
-		get database pointer.
-		return: database pointer.
+	
 	bool IsReuseAddr();
 		check socket level option SO_REUSEADDR is opened, or not.
 		return: if socket level option SO_REUSEADDR is opened, return true.
+
 	void Get(const std::string url);
 		resopnd http's Get requestion.
 		inupt: url: relative to the root directory of the server
+
 	void Post(const std::string url);
 		respond http's Post requestion.
+		inupt: url: relative to the root directory of the server
+
 	bool Handle(string request);
 		handle client/browser 's request.
 		input: request: client/browser's request context.
 		return: if success, return true.
+
 	bool Handle(char *request);
 		handle client/browser 's request.
 		input: request: client/browser's request context.
 		return: if success, return true.
+
 	string GetURL(const string request);
 		acquire URL from http request.
 		input: request: http request
 		return: if success, return URL, otherwise, return null string.
+
 	bool GetURL(const string request, string &url);
 		acquire URL from http request.
 		input: request: http request
 		output:	url: return url, if fail, return null string.
 		return: if success, return true.
+
+	virtual void SetRegister(RegisterAction *ract_ptr) = 0;
+		Set rigister's action.
+		input: ract_ptr: register's action performer.
+
+	virtual void SetEnroll(EnrollAction *eact_ptr) = 0;
+		Set enroll's action.
+		input: ract_ptr: enroll's action performer.
+
+	virtual RegisterAction *GetRegister() const = 0;
+		Get rigister's action.
+		return: register's action performer.
+
+	virtual EnrollAction *GetEnroll() const = 0;
+		Get enroll's action.
+		input: ract_ptr: enroll's action performer.
 
 	* private :
 		HttpServer(HttpServer &);
@@ -121,8 +179,10 @@
 	* protected :
 	
 	======================== inhert from Server class ================================
-		int _sockfd;					//  server socket description
-		struct sockaddr_in *_addr_ptr;	//  server address struct pointer.
+		int _sockfd;						//  server socket description
+		struct sockaddr_in *_addr_ptr;		//  server address struct pointer.
+		RegisterAction *_registeraction_ptr;//  register's action pointer.
+		EnrollAction *_enrollaction_ptr;	//  enroll's action pointer.
 
 	======================== HttpServer class ========================================
 		socklen_t _isreuseaddr;			//  socket level option SO_REUSEADDR
@@ -171,7 +231,7 @@
 
 
 3.	SimpleMySql class
-	The class is defined in database.h and is implemented in simplemysql.cc.
+	The class is defined in simplemysql.h and is implemented in simplemysql.cc.
 	This class inhert from Database class and package MYSQL's operation.
 
 	--------------------------- member function ---------------------------------------
@@ -182,6 +242,7 @@
 	bool Init()
 		initial function.
 		return: if success, return true.
+
 	static SimpleMySql *GetInstance();
 		it is a static function to get unique SimpleMySql instance variable's pointer.
 		return: if success, return unique SimpleMySql instance variable's pointer.
@@ -189,18 +250,33 @@
 	bool Query();
 		query database.
 		return: if success, return true.
+
 	bool Insert();
 		Insert a data to database.
 		return: if success, return true.
+
+	bool Search(const string table, const string field, const string value);
+		Use mysql's query keyword to judge whether the field of table have a value.
+		input: table: seleted table
+			   filed: seleted filed
+			   value: matched value.
+	bool Search(const string table, const string condition);
+		Use mysql's query keyword to judge whether condition is established.
+		input: table: selete table.
+			    condidtion: judged condition.
+
 	string GetLoginName();
 		get mysql login name.
 		return: login name.
+
 	string GetLoginPassword();
 		get mysql login password.
 		return: login password.
+
 	string GetLoginDatabase();
 		get mysql login database.
 		return: login database.
+
 	string GetServer();
 		get mysql mysql server host name.
 		return: mysql server host name.
@@ -217,14 +293,151 @@
 
 	-------------------------- member variable -------------------------------------------	
 	* private :
-		static SimpleMySql *s_simplemysql_ptr;	//  SimpleMySql pointer.
-										//  point to unique SimpleMyql instance.
-										//  because a program should only operate a database.
-		MYSQL *_mysql_ptr;				//  MYSQL pointer. point to a unique mysql database.
-		std::string _name;				//  login name
-		std::string _password;			//  login password
-		std::string _db;				//  database used soon
-		std::string _server				//  the server host name.
-										//  allow that the value is localhot
+		static shared_ptr<SimpleMySql> _simplemysql_ptr;	
+								//  SimpleMySql pointer is a shared_ptr.
+								//  point to unique SimpleMyql instance.
+								//  because a program should only operate a database.
+		MYSQL *_mysql_ptr;		//  MYSQL pointer. point to a unique mysql database.
+		std::string _name;		//  login name
+		std::string _password;	//  login password
+		std::string _db;		//  database used soon
+		std::string _server		//  the server host name.
+								//  allow that the value is localhost
 		
 
+4. RegisterAction class
+	The class is defined in registeraction and implemented in registeraction.cc.
+	The clss packged register's action. Use this class to perform register.
+
+	--------------------------- member function -------------------------------
+	* public :
+	
+	RegisterAction();
+		default constructor.
+
+	virtual ~RegisterAction();
+		virtual deconstructor.
+
+	virtual bool Init(boost::shared_ptr<SimpleMySql>spmysql_ptr);
+		Initialize the instance. 
+		Use spmysql_ptr to intialize menber variable _spmysql_ptr.
+		input: spmysql_ptr: unique SimpleMysql variable 's pointer.
+		return: if success, return true.
+
+	virtual bool Register(const std::string name,
+						  const std::string password);
+		Register in mysql.
+		input: name: account name
+			   password: account password
+		return: if success, return true.
+	
+	* private :
+		RegisterAction(const RegisterAction &);
+		void operate = (const RegisterAction &);
+
+	----------------------------- member variable -----------------------------
+	* protected :
+		shared_ptr<SimpleMysql> _spmysql_ptr;	//  point to mysql
+
+
+5. HttpRegisterAction class:
+	The class is defined in registeraction.h and implemented in httpregisteraction.cc.
+	The class packged the httpserver's register action.
+	Use the class to perform httpserver's register.
+
+	----------------------------- member functon ------------------------------
+	* public ：
+	
+	HttpRegisterAction();
+		default constructor.
+
+	virtual bool Init(boost::shared_ptr<SimpleMySql>spmysql_ptr);
+		Initialize the instance. 
+		Use spmysql_ptr to intialize menber variable _spmysql_ptr.
+		input: spmysql_ptr: unique SimpleMysql variable 's pointer.
+		return: if success, return true.
+		
+	virtual ~HttpRegisterAction();
+		virtual deconstrutor.
+
+	virtual bool Register(const std::string name,
+						  const std::string password);
+		Register in mysql.
+		input: name: account name
+			   password: account password
+		return: if success, return true.
+
+	----------------------------- member variable -----------------------------
+	* protected :
+
+	============================= inhert from EnrollAction ====================
+		shared_ptr<SimpleMysql> _spmysql_ptr;	//  point to mysql
+
+
+6. EnrollAction class:
+	The class is defined in enrollacion.h and is implemented in enrollaction.
+	The class packged enroll operator.
+	Use the class to perforn enroll operator.
+
+	-------------------------- member function --------------------------------
+	* public :
+
+	EnrollAction();
+		default constructor.
+
+	virtual ~EnrollAction();
+		virtual deconstructor.
+		
+	virtual bool Init(boost::shared_ptr<SimpleMySql> spmysql_ptr);
+		Initialize the instance. 
+		Use spmysql_ptr to intialize menber variable _spmysql_ptr.
+		input: spmysql_ptr: unique SimpleMysql variable 's pointer.
+		return: if success, return true.
+		
+	virtual bool Enroll(const std::string name,
+						const std::string password);
+		Enroll in mysql. if account existed, fail.
+		input: name: account name
+			   password: account password
+		return: if success, return true.
+
+	----------------------------- member variable -----------------------------
+	* protected :
+
+		shared_ptr<SimpleMysql> _spmysql_ptr;	//  point to mysql
+
+
+
+7. HttpEnrollAction class :
+	The class is defined in enrollaction.h and is implemented httpenrollacion.cc.
+	The class packged httpserver's enroll operator.
+	Use this class to enroll in httpserver.
+
+	--------------------------- member function -------------------------------
+	* public :
+
+	HttpEnrollAction();                                                	
+		default constructor.
+
+	virtual ~HttpEnrollAction();
+		virtual deconstructor.
+		
+	virtual bool Init(boost::shared_ptr<SimpleMySql> spmysql_ptr);
+		Initialize the instance. 
+		Use spmysql_ptr to intialize menber variable _spmysql_ptr.
+		input: spmysql_ptr: unique SimpleMysql variable 's pointer.
+		return: if success, return true.
+		
+	virtual bool Enroll(const std::string name,
+						const std::string password);
+		Enroll in mysql. if account existed, fail.
+		input: name: account name
+			   password: account password
+		return: if success, return true.
+
+	----------------------------- member variable -----------------------------
+	* protected :
+
+	============================= inhert from EnrollAction ====================
+		shared_ptr<SimpleMysql> _spmysql_ptr;	//  point to mysql
+	
