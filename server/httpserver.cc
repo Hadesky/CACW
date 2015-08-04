@@ -5,6 +5,7 @@
  * ******************************************************************/
 
 #include "enrollaction.h"
+#include "multhreads.h"
 #include "registeraction.h"
 #include "server.h"
 #include "simplemysql.h"
@@ -15,8 +16,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define BUFSIZE 4096
-#define QLEN 10
 
 HttpServer::HttpServer() {
 	
@@ -29,6 +28,9 @@ HttpServer::~HttpServer() {
 bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 	_addr_ptr = new struct sockaddr_in;
 	_isreuseaddr = 1;
+	_multhreads_ptr = new HttpMulThreads(this);
+	
+	_multhreads_ptr->Init();
 
 	if (sockfd < 0) {
 		if ((sockfd = Socket()) < 0) {
@@ -67,23 +69,28 @@ void HttpServer::Start() {
 	if (!Bind() || !Listen(QLEN)) {
 		return ;
 	}
-	
-	char buf[BUFSIZE];
-	struct sockaddr_in client_addr;
 
-	while (true) {
-		int clientfd;
-		socklen_t client_addr_len;
-		if ( (clientfd = accept(_sockfd, 
-								(struct sockaddr *)&client_addr,
-								&client_addr_len)) < 0) {
-			close(_sockfd);
-			return ;
-		}
-		int n = recv(clientfd, buf, BUFSIZE, MSG_ERRQUEUE);
-		assert(n > 0);
-		buf[n] = '\0';
-	}
+	_multhreads_ptr->Create(10);
+	_multhreads_ptr->Loop();
+	
+//	char buf[BUFSIZE];
+//	struct sockaddr_in client_addr;
+//
+//	while (true) {
+//		int clientfd;
+//		socklen_t client_addr_len;
+//		if ( (clientfd = accept(_sockfd, 
+//								(struct sockaddr *)&client_addr,
+//								&client_addr_len)) < 0) {
+//			close(_sockfd);
+//			return ;
+//		}
+//		int n = recv(clientfd, buf, BUFSIZE, MSG_ERRQUEUE);
+//		assert(n > 0);
+//		buf[n] = '\0';
+//	}
+
+
 }
 
 
@@ -212,3 +219,7 @@ bool HttpServer::Listen(const int qlen) {
 int HttpServer::Socket() {
 	return socket(AF_INET, SOCK_STREAM, 0);
 }
+
+int HttpServer::Accept(struct sockaddr *addr_ptr, socklen_t *len_ptr) {
+	return accept(_sockfd, addr_ptr, len_ptr);
+} 

@@ -160,20 +160,27 @@
 		Get enroll's action.
 		input: ract_ptr: enroll's action performer.
 
+	int Socket();
+		create a socket.
+		return: if success, return socket.
+
+	int Accept(sockaddr *addr_ptr, socklen_t *len_ptr);
+		Accept a client's request.
+		input: addr_ptr: point to socket address structrue.
+			   len_ptr : point to socket address structrue's len
+		return: socket description.
+
+	bool Bind();
+		make address relate to socket.
+		return: if success, return true.
+	bool Listen(const int qlen);
+		monitor socket.Monitoring queue's length is equal to qlen.
+		input: qlen: a queue's len, means unfinished connection number.
+		return: if success, return true.
+
 	* private :
 		HttpServer(HttpServer &);
 		void operator = (const HttpServer &);
-
-		int Socket();
-			create a socket.
-			return: if success, return socket.
-		bool Bind();
-			make address relate to socket.
-			return: if success, return true.
-		bool Listen(const int qlen);
-			monitor socket.Monitoring queue's length is equal to qlen.
-			input: qlen: a queue's len, means unfinished connection number.
-			return: if success, return true.
 
 	------------------------- member variable ----------------------------------------
 	* protected :
@@ -440,4 +447,111 @@
 
 	============================= inhert from EnrollAction ====================
 		shared_ptr<SimpleMysql> _spmysql_ptr;	//  point to mysql
+
+
+8. MulThreads class
+	The class is defined in multhreads.h and is implemented in multhreads.cc
+	The class packged multiple threads's action.What's more, it offer a 
+	interface which is used to create multiple threads( Threads_Create())
+
+	--------------------------- member function -------------------------------
+	* public :
 	
+	MulThreads();
+		default constructor.
+	virtual ~MulThreads();
+		virtual deconstructor.
+	virtual bool Init();
+		initialize instance.
+		return: if success, return true.
+	virtual bool Create(const unsigned int nthreads) = 0;
+		create nthreads threads, new threads executed will start the 
+		private member function called start_rtn.function.
+		What calls for special attention is that which threads will 
+		execute at first is not sure, when threads are created.
+	input: nthreads: the number of threads that were created.
+	return: if create threads success, return true.
+	virtual void Loop() = 0;
+		if you want to make the main thread be executed incessantly, you can
+		call this function.
+
+	virtual void Closeall() = 0;
+		if you do not make main thread be executed incessantly, you should call
+		this function to close all sub threads.
+
+	* protected :
+	
+	void *Start_rtn(void *arg) = 0;
+		the function that threads start.
+		input: arg: can point to any type argument.
+
+	------------------------- member variables --------------------------------
+	* public :
+
+	static pthread_mutex_t s_client_mutex;	//  client's mutex
+	unsigned int _nthreads;					//  number of threads
+	pthread_t *_threads;					// thread array pointer.
+
+
+9. HttpMulThreads class
+	The class is defined in multhreads.h and is implemented in
+	httpmulthreads.cc.Use the class to create threads to service for 
+	httpserver.
+
+	------------------------ member function ----------------------------------
+	* public :
+	
+	virtual bool Init(HttpServer *httpserver);
+		Initialize instance.
+		input: httpserver: point to httpserver.not null.
+
+	======================== inhert from MulThreads ===========================
+	* public :
+
+	HttpMulThreads();
+		default constructor.
+
+	virtual ~HttpMulThreads();
+		virtual deconstructor.
+	
+	viirtual bool Init();
+		Initialize instance.
+		return: if success, return true.
+
+	virtual bool Create(const unsigned int nthreads);
+		create nthreads threads, new threads executed will start the 
+		private member function called Start_rtn function.
+		What calls for special attention is that which threads will 
+		execute at first is not sure, when threads are created.
+	input: nthreads: the number of threads that were created.
+	return: if create threads success, return true.
+
+	virtual void Loop();
+		if you want to make the main thread be executed incessantly, you can
+		call this function.
+
+	virtual void Closeall();
+		if you do not make main thread be executed incessantly, you should call
+		this function to close all sub threads.
+
+	* private :
+
+	void *Start_rtn(void *arg) = 0;
+		the function that threads start.
+		input: arg: can point to any type argument.
+	
+	----------------------- member variables ----------------------------------
+	* private :
+
+	HttpServer *_httpserver		//  point to httpserver, not null;
+	
+
+	====================== inhert from MulThreads =============================
+	* public :
+
+	static pthread_mutex_t s_client_mutex;	// client's mutex
+	unsigned int _nthreads;					//  number of threads
+	pthread_t *_threads;					// thread array pointer.
+	
+
+

@@ -21,6 +21,7 @@
 
 class RegisterAction;
 class EnrollAction;
+class MulThreads;
 
 class Server {
 public :
@@ -47,9 +48,18 @@ public :
 	struct sockaddr_in *_addr_ptr;
 	RegisterAction *_registeraction_ptr;
 	EnrollAction *_enrollaction_ptr;
+	MulThreads *_multhreads_ptr;
 };
 
 class SimpleMySql;
+#ifndef BUFSIZE
+#define BUFSIZE 4096
+#endif	//  ! BUFSIZE
+
+#ifndef QLEN
+#define QLEN 10
+#endif	//  ! QLEN
+
 
 class HttpServer: public Server {
 public :
@@ -76,12 +86,13 @@ public :
 	virtual void SetEnroll(EnrollAction *eact_ptr);
 	virtual RegisterAction *GetRegister() const;
 	virtual EnrollAction *GetEnroll() const;
+	int Socket();
+	int Accept(struct sockaddr *addr_ptr, socklen_t *len_ptr);
+	bool Bind();
+	bool Listen(const int qlen);
 
 private :
 	DISALLOW_COPY_AND_ASSIGN(HttpServer);
-	int Socket();
-	bool Bind();
-	bool Listen(const int qlen);
 
 protected :
 	socklen_t _isreuseaddr;

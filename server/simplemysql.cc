@@ -8,11 +8,14 @@
 
 #include <assert.h>
 
-boost::shared_ptr<SimpleMySql> 
-	SimpleMySql::s_simplemysql_ptr = SimpleMySql::GetInstance(string("test"),
-															  string("test"),
-															  string("CACWDB"),
-															  string("localhost"));
+//boost::shared_ptr<SimpleMySql> 
+//	SimpleMySql::s_simplemysql_ptr = SimpleMySql::GetInstance(string("test"),
+//															  string("test"),
+//															  string("CACWDB"),
+//															  string("localhost"));
+//
+
+boost::shared_ptr<SimpleMySql> SimpleMySql::s_simplemysql_ptr;
 
 SimpleMySql::SimpleMySql() {
 	

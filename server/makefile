@@ -1,8 +1,9 @@
 OBJ = main.o server.o httpserver.o simplemysql.o enrollaction.o\
-	  registeraction.o httpenrollaction.o httpregisteraction.o
+	  registeraction.o httpenrollaction.o httpregisteraction.o\
+	  multhreads.o httpmulthreads.o
 
 main: $(OBJ)
-	g++ -o main $(OBJ) -lmysqlclient
+	g++ -o main $(OBJ) -lmysqlclient -lpthread
 
 main.o: server.h
 
@@ -19,6 +20,10 @@ registeraction.o:
 httpenrollaction.o: simplemysql.h
 
 httpregisteraction.o: simplemysql.h
+
+multhreads.o:
+
+httpmulthreads.o:multhreads.h server.h
 
 .PHONY:
 clear:
