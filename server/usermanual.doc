@@ -511,20 +511,29 @@
 	HttpMulThreads();
 		default constructor.
 
+	HttpMulThreads(HttpServer *httpserver);
+		input: httpserver: point to httpserver
+
 	virtual ~HttpMulThreads();
 		virtual deconstructor.
+		But This deconstructor do not free httpserver pointer;
 	
 	viirtual bool Init();
 		Initialize instance.
 		return: if success, return true.
+
+	virtual bool Init(HttpServer *httpserver);
+		Initialize instance whth httpserver.
+		input: httpserver: point to httpserver
+		return: if success return true.
 
 	virtual bool Create(const unsigned int nthreads);
 		create nthreads threads, new threads executed will start the 
 		private member function called Start_rtn function.
 		What calls for special attention is that which threads will 
 		execute at first is not sure, when threads are created.
-	input: nthreads: the number of threads that were created.
-	return: if create threads success, return true.
+		input: nthreads: the number of threads that were created.
+		return: if create threads success, return true.
 
 	virtual void Loop();
 		if you want to make the main thread be executed incessantly, you can

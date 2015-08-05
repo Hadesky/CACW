@@ -10,14 +10,14 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <stdio.h>
 
 HttpMulThreads::HttpMulThreads() {
 	
 }
 
-HttpMulThreads::HttpMulThreads(HttpServer *httpserver)
-	: _httpserver(httpserver) {
-	
+HttpMulThreads::HttpMulThreads(HttpServer *httpserver) {
+	_httpserver = httpserver;
 }
 
 HttpMulThreads::~HttpMulThreads() {
@@ -27,7 +27,6 @@ HttpMulThreads::~HttpMulThreads() {
 bool HttpMulThreads::Init() {
 	_nthreads = 0;
 	_threads_ptr = NULL;
-	_httpserver = NULL;
 
 	return true;
 }

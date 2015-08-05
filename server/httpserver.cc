@@ -23,24 +23,25 @@ HttpServer::HttpServer() {
 
 HttpServer::~HttpServer() {
 	delete _addr_ptr;
+	delete _multhreads_ptr;
 }
 
 bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 	_addr_ptr = new struct sockaddr_in;
 	_isreuseaddr = 1;
 	_multhreads_ptr = new HttpMulThreads(this);
-	
+		
 	_multhreads_ptr->Init();
 
 	if (sockfd < 0) {
-		if ((sockfd = Socket()) < 0) {
+		if ( (_sockfd = Socket()) < 0) {
 			return false;
 		}
 	} else {
 		_sockfd = sockfd;
 	}
 
-	memset(_addr_ptr, 0 , sizeof(*_addr_ptr));
+	memset(_addr_ptr, 0 , sizeof(struct sockaddr_in));
 	if (NULL == addr_ptr) {
 		_addr_ptr->sin_family = AF_INET;
 		_addr_ptr->sin_port = htonl(6666);
@@ -57,6 +58,9 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 			   &_isreuseaddr,
 			   sizeof(_isreuseaddr));
 
+	if (!Bind() || !Listen(QLEN)) {
+		return false;
+	}
 	_spmysql_ptr = SimpleMySql::GetInstance(string("test"),
 											string("test"),
 											string("CACWDB"),
@@ -66,10 +70,6 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 }
 
 void HttpServer::Start() {
-	if (!Bind() || !Listen(QLEN)) {
-		return ;
-	}
-
 	_multhreads_ptr->Create(10);
 	_multhreads_ptr->Loop();
 	
@@ -217,6 +217,9 @@ bool HttpServer::Listen(const int qlen) {
 }
 
 int HttpServer::Socket() {
+	dup2(0, 0);
+	dup2(1, 1);
+	dup2(2, 2);
 	return socket(AF_INET, SOCK_STREAM, 0);
 }
 
