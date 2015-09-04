@@ -10,12 +10,14 @@
 #include "server.h"
 #include "simplemysql.h"
 
-
-#include <assert.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+
+#ifdef DEBUG
+#include <cstdio>
+#endif // ! DEBUG
 
 HttpServer::HttpServer() {
 	
@@ -27,6 +29,9 @@ HttpServer::~HttpServer() {
 }
 
 bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
+#ifdef DEBUG
+	printf("HttpServer initing\n");
+#endif // ! DEBUG
 	_addr_ptr = new struct sockaddr_in;
 	_isreuseaddr = 1;
 	_multhreads_ptr = new HttpMulThreads(this);
@@ -70,7 +75,7 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 }
 
 void HttpServer::Start() {
-	_multhreads_ptr->Create(10);
+	_multhreads_ptr->Create(NTHREADS);
 	_multhreads_ptr->Loop();
 	
 //	char buf[BUFSIZE];
@@ -86,7 +91,6 @@ void HttpServer::Start() {
 //			return ;
 //		}
 //		int n = recv(clientfd, buf, BUFSIZE, MSG_ERRQUEUE);
-//		assert(n > 0);
 //		buf[n] = '\0';
 //	}
 
@@ -110,15 +114,12 @@ struct sockaddr_in *HttpServer::GetSocketAddress() {
 
 bool HttpServer::Register(const std::string name,
 						  const std::string password) {
-	assert(_registeraction_ptr == NULL);
 
 	return _registeraction_ptr->Register(name, password);
 }
 
 bool HttpServer::Enroll(const std::string name,
 					    const std::string password) {
-	assert(_enrollaction_ptr == NULL);
-
 	return _enrollaction_ptr->Enroll(name, password);
 }
 
@@ -134,15 +135,31 @@ bool HttpServer::IsReuseAddr() {
 	return _isreuseaddr;
 }
 
-void HttpServer::Get(const std::string url) {
+std::string HttpServer::Get(const std::string url) {
+	std::string res("");
+	if ("./register" == url) {
+		//  TO DO: Add your register code
+	}
+	else if ("./eroll" == url) {
+		//  TO DO: Add your enroll code
+	}
 	
+	return res;
 }
 
-void HttpServer::Post(const std::string url) {
-	
+std::string HttpServer::Post(const std::string url) {
+	std::string res("");
+	if ("./register" == url) {
+		//  TO DO: Add your register code
+	}
+	else if ("./eroll" == url) {
+		//  TO DO: Add your enroll code
+	}
+
+	return res;
 }
 
-bool HttpServer::Handle(const std::string request) {
+std::string HttpServer::Handle(const std::string request) {
 	if (request.find("GET", 0, request.find(" ")) != std::string::npos) {
 		Get(GetURL(request));
 	}
@@ -150,17 +167,19 @@ bool HttpServer::Handle(const std::string request) {
 		Post(GetURL(request));	
 	}
 	
-	return false;
+	return "";
 }
 
 std::string HttpServer::GetURL(const std::string request) {
 	std::size_t begin_pos = request.find(" ");
 	std::size_t end_pos = request.find(" ", begin_pos + 1);
-	string res = "";
+	string res("");
 	for (; begin_pos < end_pos; ++begin_pos) {
 		res += request[begin_pos];
 	}
-
+#ifdef DEBUG
+	printf("HttpServer::GetURL : the URL is : %s\n", res.c_str());
+#endif 
 	return res;
 }
 
@@ -217,9 +236,11 @@ bool HttpServer::Listen(const int qlen) {
 }
 
 int HttpServer::Socket() {
+	//  make sure 0, 1 and 2 file description are opened
 	dup2(0, 0);
 	dup2(1, 1);
 	dup2(2, 2);
+
 	return socket(AF_INET, SOCK_STREAM, 0);
 }
 

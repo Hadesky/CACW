@@ -563,4 +563,73 @@
 	pthread_t *_threads;					// thread array pointer.
 	
 
+10. JsonTransverter class:
+	The class is defined in file jsontransverter.h and is implemented in file
+	jsontransverter.cc.
+	The class is use to transverte between string and json string 
+	by using jsoncpp library.
 
+	--------------------- member function -----------------
+	* public :
+
+	JsonTransverter();
+		default constructor.
+
+	JsonTransverter(std::string str);
+		use str to initialize member varialable _str;
+		input: str: be use to member variable.
+
+	~JsonTransverter();
+		deconstructor.
+	
+	bool Init();
+		initialize all member variable.if need to malloc memory,
+		this function will do this.
+		return: if success, return true.
+	
+	void ToJsonString(std::string &str) const;
+		make member variable _str to transverte to json string.
+		output: str: return string which was transverted.
+
+	void ToJsonString(const std::string prestr, std::string str);
+		make prestr to transverte to json string.
+		input: prestr: the string which you transverte.
+		output: str return string which was transverted.
+
+	void SetString(std::string str);
+		set member variable _str.
+		input: str: be use to set _str's value.
+	
+	void GetString(std::string &str);
+		get member variable _str's value. 
+		output: str: save member variable _str's value.
+	
+	void Append(cons std::string &str);
+		extends the member variable _str by appending addintional characters 
+		at the end of its current value.
+		the string is a json object or a json array.
+		input: str: anthor string object, whose value is appended.
+
+	-------------------- member variable --------------------------------------
+	* public :
+
+	std::string _str;	//  save a string which is use to transverte.
+
+
+11. Session class :
+	This class is defined in session.h and is implemented in session.cc.
+	The class is used to check client's status. 
+
+	------------------- member function ---------------------------------------
+	* public :
+
+	Session();
+		default constructor.
+	~Session();
+		Deconstructor.
+	void Insert();
+		Insert a new Session.
+	void Delete();
+		Delete a Session.
+	void Search();
+		Search a Session.

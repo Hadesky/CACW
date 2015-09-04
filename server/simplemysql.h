@@ -24,11 +24,11 @@ class SimpleMySql {
 public :
 	virtual ~SimpleMySql();
 //	static SimpleMySql *GetInstance();
-	static boost::shared_ptr<SimpleMySql> 
-		GetInstance(string user,
-					string pwd,
-					string db,
-					string server);
+	static boost::shared_ptr<SimpleMySql> & 
+		GetInstance(string user = "",
+					string pwd = "",
+					string db = "",
+					string server = "");
 	bool Query(const string str);
 	bool Insert(const string table, const string field, const string value);
 	bool Search(const string table, const string field, const string value);
@@ -60,7 +60,6 @@ private :
 			  string db,
 			  string server);
 private :
-	static boost::shared_ptr<SimpleMySql> s_simplemysql_ptr;
 	MYSQL *_mysql_ptr;
 	string _user;
 	string _password;

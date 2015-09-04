@@ -7,10 +7,13 @@
 #ifndef _SERVER_H
 #define _SERVER_H
 
+#include "value.h"
+
 #include <boost/shared_ptr.hpp>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string>
+
 
 #ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
@@ -31,6 +34,7 @@ public :
 	virtual void Start() = 0;
 	virtual void SetSocketfd(int sockfd) = 0;
 	virtual int GetSockfd() = 0;
+	virtual std::string Handle(const std::string request) = 0;
 	virtual struct sockaddr_in *GetSocketAddress() = 0;
 	virtual bool Register(std::string name,
 						  std::string password) = 0;
@@ -52,14 +56,6 @@ public :
 };
 
 class SimpleMySql;
-#ifndef BUFSIZE
-#define BUFSIZE 4096
-#endif	//  ! BUFSIZE
-
-#ifndef QLEN
-#define QLEN 10
-#endif	//  ! QLEN
-
 
 class HttpServer: public Server {
 public :
@@ -76,10 +72,9 @@ public :
 						std::string password);
 	void SetReuseAddr(bool flag);
 	bool IsReuseAddr();
-	void Get(const std::string url);
-	void Post(const std::string url);
-	bool Handle(const std::string request);
-	bool Handle(char *request);
+	std::string Get(const std::string url);
+	std::string Post(const std::string url);
+	std::string Handle(const std::string request);
 	std::string GetURL(const std::string request);
 	bool GetURL(const std::string request, std::string &url);
 	virtual void SetRegister(RegisterAction *ract_ptr);

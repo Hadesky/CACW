@@ -15,7 +15,6 @@
 //															  string("localhost"));
 //
 
-boost::shared_ptr<SimpleMySql> SimpleMySql::s_simplemysql_ptr;
 
 SimpleMySql::SimpleMySql() {
 	
@@ -75,25 +74,27 @@ string SimpleMySql::GetServer() {
 	return _server;
 }
 
-boost::shared_ptr<SimpleMySql> SimpleMySql::GetInstance(
+boost::shared_ptr<SimpleMySql> &SimpleMySql::GetInstance(
 									  string user,
 									  string pwd,
 									  string db,
 									  string server) {
 
-	if (SimpleMySql::s_simplemysql_ptr.use_count() == 0) {
+	static boost::shared_ptr<SimpleMySql> s_simplemysql_ptr;
+
+	if (s_simplemysql_ptr.use_count() == 0) {
 		boost::shared_ptr<SimpleMySql> temp_ptr(new SimpleMySql());
-		SimpleMySql::s_simplemysql_ptr = temp_ptr;
-		if (!SimpleMySql::s_simplemysql_ptr->Init(user, pwd, db, server)) {
-			SimpleMySql::s_simplemysql_ptr.reset();
+		s_simplemysql_ptr = temp_ptr;
+		if (!s_simplemysql_ptr->Init(user, pwd, db, server)) {
+			s_simplemysql_ptr.reset();
 		}
 	}
 
-	return SimpleMySql::s_simplemysql_ptr;
+	return s_simplemysql_ptr;
 }
 
 bool SimpleMySql::Query(const string cmd) {
-	assert(s_simplemysql_ptr.use_count() > 0);
+	assert(GetInstance().use_count() > 0);
 	assert(_mysql_ptr != NULL);
 	if (0 == mysql_real_query(_mysql_ptr, cmd.c_str(), (unsigned int)cmd.length())) {
 		return true;
@@ -105,7 +106,7 @@ bool SimpleMySql::Query(const string cmd) {
 bool SimpleMySql::Insert(const string table,
 						 const string field, 
 						 const string value) {
-	assert(s_simplemysql_ptr.use_count() > 0);
+	assert(GetInstance().use_count() > 0);
 	const string cmd = "insert into " + table + "(" + field + ")"
 				+ " value" + "(" + value + ")";
 	assert(_mysql_ptr != NULL);
@@ -121,7 +122,7 @@ bool SimpleMySql::Insert(const string table,
 bool SimpleMySql::Search(const string table,
 						 const string field,
 						 const string value) {
-	assert(s_simplemysql_ptr.use_count() > 0);
+	assert(GetInstance().use_count() > 0);
 	const string cmd = "selete * from " + table +
 						" where " + field + "=" + value;
 	assert(_mysql_ptr != NULL);
@@ -134,8 +135,9 @@ bool SimpleMySql::Search(const string table,
 	return false;
 }
 
+
 bool SimpleMySql::Search(const string table, const string condition) {
-	assert(s_simplemysql_ptr.use_count() > 0);
+	assert(GetInstance().use_count() > 0);
 	const string cmd = "select * from " + table + " where " + condition;
 	assert(_mysql_ptr != NULL);
 	if (0 == mysql_real_query(_mysql_ptr,
@@ -151,7 +153,7 @@ bool SimpleMySql::Update(const string table,
 						 const string field,
 						 const string value,
 						 const string condition) {
-	assert(s_simplemysql_ptr.use_count() > 0);
+	assert(GetInstance().use_count() > 0);
 	const string cmd = "upadta " + table + " set " + field + "=" + value
 				+ " where " + condition;
 	assert(_mysql_ptr != NULL);

@@ -5,8 +5,10 @@
  * ********************************************************/
 
 
-#ifndef _SERCER_MULTHREADS_H
-#define _SERCER_MULTHREADS_H
+#ifndef _SERVER_MULTHREADS_H
+#define _SERVER_MULTHREADS_H
+
+#include "value.h"
 
 #include <pthread.h>
 
@@ -20,10 +22,12 @@ public :
 	virtual bool Create(const unsigned int nthreads) = 0;
 	virtual void Loop() = 0;
 	virtual void Closeall() = 0;
+	static pthread_mutex_t &GetClientMutex();
 protected :
 	static void *Start_rtn(void *);
+private :
+	DISALLOW_COPY_AND_ASSIGN(MulThreads);
 public :
-	static pthread_mutex_t s_client_mutex;
 	unsigned int _nthreads;
 	pthread_t *_threads_ptr;
 };
@@ -38,12 +42,14 @@ public :
 	virtual bool Create(const unsigned int nthreads);
 	virtual void Loop();
 	virtual void Closeall();
+	inline static pthread_mutex_t &GetClientMutex();
 protected :
 	static void *Start_rtn(void *arg);
 private :
+	DISALLOW_COPY_AND_ASSIGN(HttpMulThreads);
+private :
 	HttpServer *_httpserver;
-
 };
 
 
-#endif // !  _SERCER_MULTHREADS_H
+#endif // !  _SERVER_MULTHREADS_H
