@@ -45,11 +45,13 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 	} else {
 		_sockfd = sockfd;
 	}
-
+#ifdef DEBUG
+	printf("server fd : %d\n", _sockfd);
+#endif	// !DEBUG
 	memset(_addr_ptr, 0 , sizeof(struct sockaddr_in));
 	if (NULL == addr_ptr) {
 		_addr_ptr->sin_family = AF_INET;
-		_addr_ptr->sin_port = htonl(6666);
+		_addr_ptr->sin_port = htons(8000);
 		_addr_ptr->sin_addr.s_addr = htonl(INADDR_ANY);
 	} else {
 		_addr_ptr->sin_family = addr_ptr->sin_family;
@@ -63,7 +65,10 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 			   &_isreuseaddr,
 			   sizeof(_isreuseaddr));
 
-	if (!Bind() || !Listen(QLEN)) {
+	if (!Bind()) {
+		return false;
+	}
+	if (!Listen(QLEN)) {
 		return false;
 	}
 	_spmysql_ptr = SimpleMySql::GetInstance(string("test"),
@@ -152,8 +157,9 @@ std::string HttpServer::Post(const std::string url) {
 	if ("./register" == url) {
 		//  TO DO: Add your register code
 	}
-	else if ("./eroll" == url) {
+	else if ("./enroll" == url) {
 		//  TO DO: Add your enroll code
+		// _enrollaction_ptr->Enroll("", "");
 	}
 
 	return res;
@@ -178,7 +184,7 @@ std::string HttpServer::GetURL(const std::string request) {
 		res += request[begin_pos];
 	}
 #ifdef DEBUG
-	printf("HttpServer::GetURL : the URL is : %s\n", res.c_str());
+	printf("HttpServer::GetURL : the URL is :%s\n", res.c_str());
 #endif 
 	return res;
 }
@@ -219,7 +225,9 @@ bool HttpServer::Bind() {
 
 		return false;
 	}
-
+#ifdef DEBUG
+	printf("bind success...\n");
+#endif	// ! DEBUG
 	return true;
 }
 
@@ -231,6 +239,9 @@ bool HttpServer::Listen(const int qlen) {
 
 		return false;
 	}	
+#ifdef DEBUG
+	printf("listen success...\n");
+#endif	// ! DEBUG
 
 	return true;
 }

@@ -82,6 +82,9 @@ void HttpMulThreads::Loop() {
 	client_addr_ptr = new struct sockaddr_in;
 	while(true) {
 		pthread_mutex_lock(&GetClientMutex());
+#ifdef DEBUG
+		printf("Loop get mutex \n");
+#endif // ! DEBUG
 		//  accept http request and Handle the request;
 		client_fd = _httpserver->Accept((struct sockaddr *)client_addr_ptr, &client_addrlen);
 		read(client_fd, command, BUFFSIZE);
@@ -126,9 +129,12 @@ void *HttpMulThreads::Start_rtn(void *arg) {
 		//  accept http request and Handle the request;
 		client_fd = httpserver->Accept((struct sockaddr *)client_addr_ptr, &client_addrlen);
 		read(client_fd, command, BUFFSIZE);
+#ifdef DEBUG
+		printf("Start_rtn command : \n%s\n", command);
+#endif	// !DEBUG
 		std::string res(httpserver->Handle(command));
 #ifdef DEBUG
-		printf("MAIN LOOP %ld : %s\n", pthread_self(), res.c_str());
+		printf("Start_rtn LOOP %ld : %s\n", pthread_self(), res.c_str());
 		res = testhead + res + testend;
 		write(client_fd, res.c_str(), res.size());
 #endif // ! DEBUG
