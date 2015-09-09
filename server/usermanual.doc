@@ -384,7 +384,7 @@
 6. EnrollAction class:
 	The class is defined in enrollacion.h and is implemented in enrollaction.
 	The class packged enroll operator.
-	Use the class to perforn enroll operator.
+	Use the class to perform enroll operator.
 
 	-------------------------- member function --------------------------------
 	* public :

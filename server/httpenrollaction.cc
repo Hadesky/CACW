@@ -7,6 +7,9 @@
 #include "enrollaction.h"
 #include "simplemysql.h"
 
+#ifdef DEBUG
+#include <cstdio>
+#endif	// ! DEBUG
 
 HttpEnrollAction::HttpEnrollAction() {
 	
@@ -23,12 +26,12 @@ bool HttpEnrollAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 	return true;
 }
 
-bool HttpEnrollAction::Enroll(const std::string name,
-							  const std::string password) {
-	if (_spmysql_ptr->Search(std::string("User"), string("UserName"), name)) {
-		return false;
-	}
-	const string field("UserName, UserPassword");
-	const string value = "\"" + name + "\",\"" + password + "\"";
-	return _spmysql_ptr->Insert(string("User"), field, value);
+bool HttpEnrollAction::Enroll(const std::string &name,
+							  const std::string &password){
+	const string condition = "UserName=\'" + name +
+								"\' AND " + "UserPassword=\'" + password + "\'";
+#ifdef DEBUG
+	printf("HttpEnrollAction::Enroll :\ncondition : %s", condition.c_str());
+#endif	// ! DEBUG
+	return _spmysql_ptr->Search(string("CACWUser"), condition);
 }

@@ -24,8 +24,8 @@ public :
 	EnrollAction();
 	virtual ~EnrollAction();
 	virtual bool Init(boost::shared_ptr<SimpleMySql> spmysql_ptr);
-	virtual bool Enroll(const std::string name,
-						const std::string password);
+	virtual bool Enroll(const std::string &name,
+						const std::string &password);
 private :
 	DISALLOW_COPY_AND_ASSIGN(EnrollAction);
 
@@ -39,8 +39,8 @@ public :
 	HttpEnrollAction();
 	virtual ~HttpEnrollAction();
 	virtual bool Init(boost::shared_ptr<SimpleMySql> spmysql_ptr);
-	virtual bool Enroll(const std::string name,
-						const std::string password);
+	virtual bool Enroll(const std::string &name,
+					const std::string &password);
 private :
 	DISALLOW_COPY_AND_ASSIGN(HttpEnrollAction);
 };

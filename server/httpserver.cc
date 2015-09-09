@@ -35,9 +35,16 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 	_addr_ptr = new struct sockaddr_in;
 	_isreuseaddr = 1;
 	_multhreads_ptr = new HttpMulThreads(this);
-		
-	_multhreads_ptr->Init();
+	_registeraction_ptr = new HttpRegisterAction();
+	_enrollaction_ptr = new HttpEnrollAction();
+	_spmysql_ptr = SimpleMySql::GetInstance("localhost",
+			"root",
+			"mysqllearning",
+			"CACWDB");
 
+	_multhreads_ptr->Init();
+	_registeraction_ptr->Init(_spmysql_ptr);
+	_enrollaction_ptr->Init(_spmysql_ptr);
 	if (sockfd < 0) {
 		if ( (_sockfd = Socket()) < 0) {
 			return false;
@@ -71,10 +78,6 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 	if (!Listen(QLEN)) {
 		return false;
 	}
-	_spmysql_ptr = SimpleMySql::GetInstance(string("test"),
-											string("test"),
-											string("CACWDB"),
-											string("localhost"));
 
 	return true;
 }
@@ -117,14 +120,25 @@ struct sockaddr_in *HttpServer::GetSocketAddress() {
 	return _addr_ptr;
 }
 
-bool HttpServer::Register(const std::string name,
-						  const std::string password) {
+bool HttpServer::Register(const std::string &name,
+		const std::string &password,
+		const std::string &sex,
+		const std::string &email,
+		const std::string &address,
+		const std::string &phonenumber,
+		const std::string &shortphonenumber){
 
-	return _registeraction_ptr->Register(name, password);
+	return _registeraction_ptr->Register(name,
+			password,
+			sex,
+			email,
+			address,
+			phonenumber,
+			shortphonenumber);
 }
 
-bool HttpServer::Enroll(const std::string name,
-					    const std::string password) {
+bool HttpServer::Enroll(const std::string &name,
+		const std::string &password){
 	return _enrollaction_ptr->Enroll(name, password);
 }
 
@@ -142,6 +156,11 @@ bool HttpServer::IsReuseAddr() {
 
 std::string HttpServer::Get(const std::string url) {
 	std::string res("");
+#ifdef DEBUG
+	printf("HttpServer::Get\n");
+	Register("hahaha", "123456789");
+	Enroll("hahaha", "123456789");
+#endif	// ! DEBUG
 	if ("./register" == url) {
 		//  TO DO: Add your register code
 	}
@@ -154,6 +173,11 @@ std::string HttpServer::Get(const std::string url) {
 
 std::string HttpServer::Post(const std::string url) {
 	std::string res("");
+#ifdef DEBUG
+	printf("HttpServer::Post:\n");
+	Register("hahaha", "123456789");
+	Enroll("hahaha", "123456789");
+#endif	// ! DEBUG
 	if ("./register" == url) {
 		//  TO DO: Add your register code
 	}

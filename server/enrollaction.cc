@@ -20,7 +20,7 @@ bool EnrollAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 	return true;
 }
 
-bool EnrollAction::Enroll(const std::string name,
-						  const std::string password) {
+bool EnrollAction::Enroll(const std::string &name,
+		const std::string &password) {
 	return true;
 }
