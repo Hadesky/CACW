@@ -9,8 +9,10 @@
 #define _SIMPLEMYSQL_H
 
 #include <boost/shared_ptr.hpp>
+#include <map>
 #include <mysql/mysql.h>
 #include <string>
+#include <vector>
 
 using std::string;
 
@@ -38,6 +40,10 @@ public :
 				const string field,
 				const string value,
 				const string condition);
+	bool GetAllResult(MYSQL_RES *mysqlres, std::vector<std::map<string, string> >& res);
+	MYSQL_RES *GetUseResult();
+	MYSQL_RES *GetStoreResult();
+	bool FreeResult(MYSQL_RES *mysqlres);
 //	void SetLoginName(string name);
 //	void SetLoginName(char *name);
 //	void SetLoginPassword(string pwd);
@@ -59,6 +65,8 @@ private :
 			  string pwd,
 			  string db,
 			  string server);
+	bool FetchOneRow(MYSQL_RES *mysqlres, std::map<string, string>& row);
+
 private :
 	MYSQL *_mysql_ptr;
 	string _user;

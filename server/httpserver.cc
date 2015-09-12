@@ -158,7 +158,9 @@ std::string HttpServer::Get(const std::string url) {
 	std::string res("");
 #ifdef DEBUG
 	printf("HttpServer::Get\n");
+	printf("Register : \n");
 	Register("hahaha", "123456789");
+	printf("Enroll : \n");
 	Enroll("hahaha", "123456789");
 #endif	// ! DEBUG
 	if ("./register" == url) {
@@ -175,7 +177,9 @@ std::string HttpServer::Post(const std::string url) {
 	std::string res("");
 #ifdef DEBUG
 	printf("HttpServer::Post:\n");
+	printf("Register : \n");
 	Register("hahaha", "123456789");
+	printf("Enroll : \n");
 	Enroll("hahaha", "123456789");
 #endif	// ! DEBUG
 	if ("./register" == url) {

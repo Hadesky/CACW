@@ -33,5 +33,18 @@ bool HttpEnrollAction::Enroll(const std::string &name,
 #ifdef DEBUG
 	printf("HttpEnrollAction::Enroll :\ncondition : %s", condition.c_str());
 #endif	// ! DEBUG
-	return _spmysql_ptr->Search(string("CACWUser"), condition);
+	if( _spmysql_ptr->Search(string("CACWUser"), condition)) {
+#ifdef DEBUG
+		//std::vector<std::map<string, string> >res;
+		//_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), res);
+#endif	//  !DEBUG
+		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
+		return true;
+	}
+	else {
+		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
+		return false;
+	}
+
+	return false;
 }

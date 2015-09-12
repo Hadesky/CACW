@@ -33,6 +33,7 @@ bool HttpRegisterAction::Register(const std::string &name,
 							  const std::string &phonenumber,
 							  const std::string &shortphonenumber){
 	if (_spmysql_ptr->Search(std::string("CACWUser"), string("UserName"), name)) {
+		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 		return false;
 	}
 	const string field("UserName,\
@@ -47,10 +48,12 @@ shortphonenumber");
 #endif	// ! DEBUG
 	const string values = "\"" + name + "\",\"" +password +"\",\"" +
 		sex + "\",\"" + email + "\",\"" + address + "\",\"" +
-		phonenumber + "\",\"" + shortphonenumber + "\",\""; 
+		phonenumber + "\",\"" + shortphonenumber + "\""; 
+
 #ifdef DEBUG
 	printf("HttpRegisterAction::Register\nvalues : %s\n", values.c_str());
 #endif	// ! DEBUG
+
 	return _spmysql_ptr->Insert(string("CACWUser"), field, values);
 }
 

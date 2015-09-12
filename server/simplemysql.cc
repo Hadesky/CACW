@@ -114,6 +114,7 @@ bool SimpleMySql::Query(const string cmd) {
 		return false;
 	}
 	if (0 == mysql_real_query(_mysql_ptr, cmd.c_str(), (unsigned int)cmd.length())) {
+
 		return true;
 	}
 
@@ -132,7 +133,10 @@ bool SimpleMySql::Insert(const string table,
 		return false;
 	}
 	const string cmd = "insert into " + table + "(" + field + ")"
-				+ " value" + "(" + value + ")";
+				+ " values" + "(" + value + ")";
+#ifdef DEBUG
+	printf("SimpleMySql::Insert command : %s\n", cmd.c_str());
+#endif	// ! DEBUG
 	if (0 == mysql_real_query(_mysql_ptr,
 							 cmd.c_str(),
 							 (unsigned int)cmd.length())) {
@@ -142,16 +146,30 @@ bool SimpleMySql::Insert(const string table,
 		return true;
 	}
 
+#ifdef DEBUG
+		printf("SimpleMySql::Insert fail...\n");
+		printf("%s\n", mysql_error(_mysql_ptr));
+#endif	// ! DEBUG
+
 	return false;
 }
 
 bool SimpleMySql::Search(const string table,
 						 const string field,
 						 const string value) {
-	assert(GetInstance().use_count() > 0);
-	const string cmd = "selete * from " + table +
-						" where " + field + "=" + value;
-	assert(_mysql_ptr != NULL);
+	if(GetInstance().use_count() == 0 || NULL == _mysql_ptr) {
+#ifdef DEBUG
+		printf("SimpleMySql::Search\n\
+				use_count is %ld\n\
+				_mysql_ptr is %p\n", GetInstance().use_count(), _mysql_ptr);
+#endif	// ! DEBUG
+		return false;
+	}
+	const string cmd = "select * from " + table +
+						" where " + field + "=" + "\'" + value + "\'";
+#ifdef DEBUG
+	printf("SimpleMySql::Search\n%s\n", cmd.c_str());
+#endif	// ! DEBUG
 	if ( 0 == mysql_real_query(_mysql_ptr,
 							   cmd.c_str(),
 							   (unsigned int)cmd.length())) {
@@ -160,6 +178,10 @@ bool SimpleMySql::Search(const string table,
 #endif	// ! DEBUG
 		return true;
 	}
+#ifdef DEBUG
+		printf("SimpleMySql::Search fail...\n");
+		printf("%s\n", mysql_error(_mysql_ptr));
+#endif	// ! DEBUG
 
 	return false;
 }
@@ -168,7 +190,7 @@ bool SimpleMySql::Search(const string table,
 bool SimpleMySql::Search(const string table, const string condition) {
 	if(GetInstance().use_count() == 0 || NULL == _mysql_ptr) {
 #ifdef DEBUG
-		printf("SimpleMySql::Insert\n\
+		printf("SimpleMySql::Search\n\
 				use_count is %ld\n\
 				_mysql_ptr is %p\n", GetInstance().use_count(), _mysql_ptr);
 #endif	// ! DEBUG
@@ -184,6 +206,10 @@ bool SimpleMySql::Search(const string table, const string condition) {
 		return true;
 	}
 
+#ifdef DEBUG
+		printf("SimpleMySql::Search fail...\n");
+		printf("%s\n", mysql_error(_mysql_ptr));
+#endif	// ! DEBUG
 	return false;
 }
 
@@ -213,6 +239,35 @@ bool SimpleMySql::Update(const string table,
 	return false;
 }
 
+
+MYSQL_RES *SimpleMySql::GetUseResult() {
+	if (false == _isinit) {
+		return NULL;
+	}
+
+	return mysql_use_result(_mysql_ptr); 
+}
+
+MYSQL_RES *SimpleMySql::GetStoreResult() {
+	if (false == _isinit) {
+		return NULL;
+	}
+
+	return mysql_store_result(_mysql_ptr);
+}
+
+bool SimpleMySql::FreeResult(MYSQL_RES *mysqlres) {
+	if (false == _isinit || NULL == mysqlres) {
+		return false;
+	}
+	std::vector<std::map<string, string> >res;
+	GetAllResult(mysqlres, res);
+	mysql_free_result(mysqlres);
+
+	return true;
+}
+
+
 bool SimpleMySql::Init(string user,
 		string pwd,
 		string db,
@@ -241,6 +296,48 @@ bool SimpleMySql::Init(string user,
 		return false;
 	}
 	_isinit = true;
+#ifdef DEBUG
+		printf("SimpleMySql::connected success...\n");
+#endif	// ! DEBUG
 
 	return true;
 }
+
+bool SimpleMySql::GetAllResult(MYSQL_RES *mysqlres, std::vector<std::map<string, string> >&res) {
+	std::map<string, string> row;
+#ifdef DEBUG
+	printf("SimpleMySql::GetAllResult\n");
+#endif	// !DEBUG
+	while (FetchOneRow(mysqlres,row)) {
+#ifdef DEBUG
+		for (std::map<string, string>::iterator it = row.begin();
+				it != row.end();
+				++it) {
+			printf("key : %s, values : %s\n", it->first.c_str(), it->second.c_str());
+		}
+#endif	// ! DEBUG
+		res.push_back(row);
+	}
+
+	return true;
+}
+
+bool SimpleMySql::FetchOneRow(MYSQL_RES *mysqlres, std::map<string, string> &row) {
+	MYSQL_ROW mysqlrow_ptr = mysql_fetch_row(mysqlres);
+	unsigned int column = mysql_num_fields(mysqlres);
+	MYSQL_FIELD *fields = mysql_fetch_fields(mysqlres);
+	
+//#ifdef DEBUG
+//		printf("mysqlrow_ptr:%p\ncolumn:%d\nfields:%p", mysqlrow_ptr, column, fields);
+//#endif	// !DEBUG
+	if (NULL == mysqlrow_ptr || column <= 0 || NULL == fields) {
+		return false;
+	}
+
+	for (unsigned int i = 0; i < column; ++i) {
+		row[fields[i].name] = mysqlrow_ptr[i];
+	}
+	
+	return true;
+}
+
