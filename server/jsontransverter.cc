@@ -5,17 +5,22 @@
  * ********************************************************/
 
 #include "jsontransverter.h"
+#include "./json/json.h"
 
-JsonTransverter::JsonTransverter() {
-	_str = "";
+JsonTransverter::JsonTransverter()
+	:_str(""){
+	
 }
 
-JsonTransverter::JsonTransverter(std::string str) {
-	_str = str;
+JsonTransverter::JsonTransverter(std::string str) 
+	: _str(str){
+
 }
+
 JsonTransverter::~JsonTransverter() {
 	
 }
+
 bool JsonTransverter::Init() {
 	return true;
 }
@@ -40,7 +45,7 @@ void JsonTransverter::ToJsonString(const std::string prestr, std::string &str) {
 	} else {
 		str = sw.write(value);
 	}
-	
+	delete pjsonparser;
 }
 
 void JsonTransverter::SetString(std::string str) {
@@ -53,4 +58,34 @@ void JsonTransverter::GetString(std::string &str) {
 
 void JsonTransverter::Append(const std::string &str) {
 	_str.append(str);
+}
+
+
+bool JsonTransverter::ToJsonString(const string &oldstr, string &newstr) {
+	static Json::Reader jsonparser = Json::Reader(Json::Features::strictMode());
+	static Json::Value value;
+	static Json::StyledWriter sw;
+	
+	if (!jsonparser.parse(oldstr, value)) {
+		newstr = "";
+		return false;
+	} else {
+		newstr = sw.write(value);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool JsonTransverter::ToJsonString(const std::map<string, string>&dir, string &str) {
+	static Json::StyledWriter sw;
+	Json::Value value;
+	
+	for (auto it = dir.cbegin(); it != dir.cend(); ++it) {
+		value[it->first] = it->second;
+	}
+	str = sw.write(value);
+	
+	return true;
 }

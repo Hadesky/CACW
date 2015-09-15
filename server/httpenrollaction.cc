@@ -9,6 +9,8 @@
 
 #ifdef DEBUG
 #include <cstdio>
+#include "jsontransverter.h"
+#include <vector>
 #endif	// ! DEBUG
 
 HttpEnrollAction::HttpEnrollAction() {
@@ -35,8 +37,17 @@ bool HttpEnrollAction::Enroll(const std::string &name,
 #endif	// ! DEBUG
 	if( _spmysql_ptr->Search(string("CACWUser"), condition)) {
 #ifdef DEBUG
-		//std::vector<std::map<string, string> >res;
-		//_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), res);
+		std::vector<std::map<string, string> >res;
+		std::map<string, string> temp;
+		string str;
+		_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), res);
+		for (std::vector<std::map<string, string> >::iterator iter = res.begin(); 
+				iter != res.end();
+				++iter) {
+			temp = *iter;
+			JsonTransverter::ToJsonString(temp, str);
+			printf("%s\n", str.c_str());
+		}
 #endif	//  !DEBUG
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 		return true;

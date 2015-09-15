@@ -9,9 +9,10 @@
 
 #include "value.h"
 
-#include "./json/json.h"
-
+#include <map>
 #include <string>
+
+using std::string;
 
 class JsonTransverter {
 public :
@@ -24,6 +25,8 @@ public :
 	void SetString(std::string str);
 	void GetString(std::string &str);
 	void Append(const std::string &str);
+	static bool ToJsonString(const string &oldstr, string &newstr);
+	static bool ToJsonString(const std::map<string, string>&dir, string &str);
 private :
 	DISALLOW_COPY_AND_ASSIGN(JsonTransverter);
 private :

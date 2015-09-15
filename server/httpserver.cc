@@ -5,6 +5,7 @@
  * ******************************************************************/
 
 #include "enrollaction.h"
+#include "jsontransverter.h"
 #include "multhreads.h"
 #include "registeraction.h"
 #include "server.h"
