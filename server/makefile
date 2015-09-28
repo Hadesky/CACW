@@ -7,8 +7,8 @@ STD=-std=c++11
 JSONLIBPATH=./jsonlib/
 
 main: $(OBJ)
-	g++ $(DEBUG) $(STD) -L $(JSONLIBPATH) -g -o main $(OBJ) \
-		-lmysqlclient -lpthread -ljson_linux-gcc-4.8_libmt 
+	g++ $(DEBUG) $(STD) -L $(JSONLIBPATH) -g $(OBJ) \
+		-lmysqlclient -lpthread -ljson_linux-gcc-4.8_libmt -o main 
 main.o: server.h main.cc
 	g++ $(DEBUG) $(STD) -g -c main.cc
 server.o: server.cc

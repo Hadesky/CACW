@@ -21,7 +21,7 @@ public :
 	~JsonTransverter();
 	bool Init();
 	void ToJsonString(std::string &str) const;
-	void ToJsonString(const std::string prestr, std::string &str);
+	//void ToJsonString(const std::string &prestr, std::string &str);
 	void SetString(std::string str);
 	void GetString(std::string &str);
 	void Append(const std::string &str);

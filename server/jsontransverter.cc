@@ -36,17 +36,17 @@ void JsonTransverter::ToJsonString(std::string &str) const{
 	}
 }
 	
-void JsonTransverter::ToJsonString(const std::string prestr, std::string &str) {
-	Json::Reader *pjsonparser = new Json::Reader(Json::Features::strictMode());
-	Json::Value value;
-	Json::StyledWriter sw;
-	if (!pjsonparser->parse(prestr, value)) {
-		str = "";
-	} else {
-		str = sw.write(value);
-	}
-	delete pjsonparser;
-}
+//void JsonTransverter::ToJsonString(const std::string &prestr, std::string &str) {
+//	Json::Reader *pjsonparser = new Json::Reader(Json::Features::strictMode());
+//	Json::Value value;
+//	Json::StyledWriter sw;
+//	if (!pjsonparser->parse(prestr, value)) {
+//		str = "";
+//	} else {
+//		str = sw.write(value);
+//	}
+//	delete pjsonparser;
+//}
 
 void JsonTransverter::SetString(std::string str) {
 	_str = str;
@@ -67,7 +67,7 @@ bool JsonTransverter::ToJsonString(const string &oldstr, string &newstr) {
 	static Json::StyledWriter sw;
 	
 	if (!jsonparser.parse(oldstr, value)) {
-		newstr = "";
+		newstr.clear();
 		return false;
 	} else {
 		newstr = sw.write(value);

@@ -10,6 +10,7 @@
 #include "value.h"
 
 #include <boost/shared_ptr.hpp>
+#include <map>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string>
@@ -34,7 +35,7 @@ class Server {
 		virtual void Start() = 0;
 		virtual void SetSocketfd(int sockfd) = 0;
 		virtual int GetSockfd() = 0;
-		virtual std::string Handle(const std::string request) = 0;
+		virtual std::string Handle(const std::string &request) = 0;
 		virtual struct sockaddr_in *GetSocketAddress() = 0;
 		virtual bool Register(const std::string &name,
 				const std::string &password,
@@ -82,15 +83,23 @@ class HttpServer: public Server {
 				const std::string &password);
 		void SetReuseAddr(bool flag);
 		bool IsReuseAddr();
-		std::string Get(const std::string url);
-		std::string Post(const std::string url);
-		std::string Handle(const std::string request);
+		std::string Get(const std::string &command);
+		std::string Post(const std::string &command);
+		std::string Handle(const std::string &request);
 		std::string GetURL(const std::string request);
 		bool GetURL(const std::string request, std::string &url);
-		virtual void SetRegister(RegisterAction *ract_ptr);
-		virtual void SetEnroll(EnrollAction *eact_ptr);
-		virtual RegisterAction *GetRegister() const;
-		virtual EnrollAction *GetEnroll() const;
+		bool GetMethod(const std::string &request, std::string &method);
+		bool GetCommand(const std::string &request, std::string &command);
+		std::string GetHttpResponseHead(const std::string &version,
+				const std::string &state_code,
+				const std::string &reason_phrase);
+		bool AddFieldInHttpResponseHead(std::string &httprsph,
+				const std::string &field,
+				const std::string &value);
+		inline virtual void SetRegister(RegisterAction *ract_ptr);
+		inline virtual void SetEnroll(EnrollAction *eact_ptr);
+		inline virtual RegisterAction *GetRegister() const;
+		inline virtual EnrollAction *GetEnroll() const;
 		int Socket();
 		int Accept(struct sockaddr *addr_ptr, socklen_t *len_ptr);
 		bool Bind();

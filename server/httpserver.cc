@@ -155,7 +155,7 @@ bool HttpServer::IsReuseAddr() {
 	return _isreuseaddr;
 }
 
-std::string HttpServer::Get(const std::string url) {
+std::string HttpServer::Get(const std::string &command) {
 	std::string res("");
 #ifdef DEBUG
 	printf("HttpServer::Get\n");
@@ -164,17 +164,19 @@ std::string HttpServer::Get(const std::string url) {
 	printf("Enroll : \n");
 	Enroll("hahaha", "123456789");
 #endif	// ! DEBUG
-	if ("./register" == url) {
+	if ("login" == command) {
 		//  TO DO: Add your register code
+		JsonTransverter::ToJsonString("{Result: log success}", res);
 	}
-	else if ("./eroll" == url) {
+	else if ("register" == command) {
 		//  TO DO: Add your enroll code
+		JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
 	
 	return res;
 }
 
-std::string HttpServer::Post(const std::string url) {
+std::string HttpServer::Post(const std::string &command) {
 	std::string res("");
 #ifdef DEBUG
 	printf("HttpServer::Post:\n");
@@ -183,23 +185,38 @@ std::string HttpServer::Post(const std::string url) {
 	printf("Enroll : \n");
 	Enroll("hahaha", "123456789");
 #endif	// ! DEBUG
-	if ("./register" == url) {
+	if ("register" == command) {
 		//  TO DO: Add your register code
+		JsonTransverter::ToJsonString("{Result: register success}", res);
+#ifdef DEBUG
+		printf("HttpServer::Post: %s\n", res.c_str());
+#endif	// !DEBUG
 	}
-	else if ("./enroll" == url) {
+	else if ("login" == command) {
 		//  TO DO: Add your enroll code
 		// _enrollaction_ptr->Enroll("", "");
+		JsonTransverter::ToJsonString("{Result: login success}", res);
+#ifdef DEBUG
+		printf("HttpServer::Post: %s\n", res.c_str());
+#endif	// !DEBUG
 	}
 
 	return res;
 }
 
-std::string HttpServer::Handle(const std::string request) {
-	if (request.find("GET", 0, request.find(" ")) != std::string::npos) {
-		Get(GetURL(request));
+std::string HttpServer::Handle(const std::string &request) {
+	std::string method;
+	std::string command;
+	GetMethod(request, method);
+#ifdef DEBUG
+	printf("HttpServer::Handle...\n");
+#endif	// !DEBUG
+	GetCommand(request, command);
+	if (method == "GET") {
+		return Get(command);
 	}
-	else if (request.find("GET", 0, request.find(" ")) != std::string::npos) {
-		Post(GetURL(request));	
+	else if (method != "POST") {
+		return Post(command);
 	}
 	
 	return "";
@@ -218,6 +235,7 @@ std::string HttpServer::GetURL(const std::string request) {
 	return res;
 }
 
+
 bool HttpServer::GetURL(const std::string request, std::string &url) {
 	std::size_t begin_pos = request.find(" ");
 	std::size_t end_pos = request.find(" ", begin_pos);
@@ -226,6 +244,75 @@ bool HttpServer::GetURL(const std::string request, std::string &url) {
 	}
 
 	return !url.empty();
+}
+
+bool HttpServer::GetMethod(const std::string &request, std::string &method) {
+	if (request.empty()) {
+		return false;
+	}
+	std::size_t pos = request.find(" ");
+	if (pos <= 0) {
+		return false;
+	}
+	method.clear();
+	for (std::size_t i = 0; i < pos; ++i) {
+		method += request[i];
+	}
+
+	return true;
+}
+
+
+bool HttpServer::GetCommand(const std::string &request, std::string &command) {
+	if (request.empty()) {
+		return false;
+	}
+
+	std::size_t start_pos = request.find("Command");
+#ifdef DEBUG
+	printf("HttpServer::GetCommand :%ld\n", start_pos);
+#endif	// !DEBUG
+	if (std::string::npos == start_pos) {
+		return false;
+	}
+	std::size_t end_pos = request.find("\n", start_pos);
+#ifdef DEBUG
+	printf("HttpServer::GetCommand :%ld\n", end_pos);
+#endif	// !DEBUG
+	if (std::string::npos == end_pos) {
+		return false;
+	}
+	command.clear();
+	for(start_pos += string("Command: ").size(); start_pos < end_pos; ++start_pos) {
+		command.push_back(request[start_pos]);
+	}
+#ifdef DEBUG
+	printf("HttpServer::GetCommand : %s\n", command.c_str());
+#endif	//!DEBUG
+	
+	return true;
+}
+
+
+std::string HttpServer::GetHttpResponseHead(const std::string &version,
+		const std::string &state_code,
+		const std::string &reason_phrase){
+	return std::string(version + " " + state_code + " " + reason_phrase + "\r\n\r\n");
+}
+
+bool HttpServer::AddFieldInHttpResponseHead(std::string &httprsph,
+		const std::string &field,
+		const std::string &value) {
+	std::size_t pos = httprsph.rfind("\r\n");
+	if (pos == std::string::npos) {
+#ifdef DEBUG
+		printf("HttpServer::AddFieldInHttpResponseHead: not find \r\n");
+#endif	// !DEBUG
+		return false;
+	}
+	httprsph.insert(pos, field + ": " + value);
+
+	return true;
 }
 
 void HttpServer::SetRegister(RegisterAction *ract_ptr) {
