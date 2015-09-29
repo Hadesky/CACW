@@ -11,7 +11,7 @@ main: $(OBJ)
 		-lmysqlclient -lpthread -ljson_linux-gcc-4.8_libmt -o main 
 main.o: server.h main.cc
 	g++ $(DEBUG) $(STD) -g -c main.cc
-server.o: server.cc
+server.o: server.h server.cc
 	g++ $(DEBUG) $(STD) -g -c server.cc
 httpserver.o:httpserver.cc simplemysql.h enrollaction.h registeraction.h 
 	g++ $(DEBUG) $(STD) -g -c httpserver.cc

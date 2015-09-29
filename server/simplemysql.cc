@@ -19,7 +19,13 @@
 
 
 SimpleMySql::SimpleMySql()
-	:_mysql_ptr(NULL){
+	:_mysql_ptr(NULL),
+	 _use_result(NULL),
+	 _user(""),
+	 _password(""),
+	 _db(""),
+	 _server(""),
+	 _isinit(false) {
 	
 }
 
@@ -86,20 +92,20 @@ boost::shared_ptr<SimpleMySql> &SimpleMySql::GetInstance(
 
 	static boost::shared_ptr<SimpleMySql> s_simplemysql_ptr(new SimpleMySql());
 	s_simplemysql_ptr->Init(user, pwd, db, server);
-#ifdef DEBUG
-	printf("SimpleMySql::GetInstance:\n\
-			s_simplemysql_ptr.use_count is %ld\n", s_simplemysql_ptr.use_count());
-#endif	// ! DEBUG
-	if (s_simplemysql_ptr.use_count() == 0) {
-		boost::shared_ptr<SimpleMySql> temp_ptr(new SimpleMySql());
-		s_simplemysql_ptr = temp_ptr;
-		if (!s_simplemysql_ptr->Init(user, pwd, db, server)) {
-#ifdef DEBUG
-			printf("SimpleMySql is initialized ...\n");
-#endif	// ! DEBUG
-			s_simplemysql_ptr.reset();
-		}
-	}
+//#ifdef DEBUG
+//	printf("SimpleMySql::GetInstance:\n\
+//			s_simplemysql_ptr.use_count is %ld\n", s_simplemysql_ptr.use_count());
+//#endif	// ! DEBUG
+//	if (s_simplemysql_ptr.use_count() == 0) {
+//		boost::shared_ptr<SimpleMySql> temp_ptr(new SimpleMySql());
+//		s_simplemysql_ptr = temp_ptr;
+//		if (!s_simplemysql_ptr->Init(user, pwd, db, server)) {
+//#ifdef DEBUG
+//			printf("SimpleMySql is initialized ...\n");
+//#endif	// ! DEBUG
+//			s_simplemysql_ptr.reset();
+//		}
+//	}
 
 	return s_simplemysql_ptr;
 }
@@ -114,7 +120,7 @@ bool SimpleMySql::Query(const string cmd) {
 		return false;
 	}
 	if (0 == mysql_real_query(_mysql_ptr, cmd.c_str(), (unsigned int)cmd.length())) {
-
+		UpdateUseResult();
 		return true;
 	}
 
@@ -143,6 +149,7 @@ bool SimpleMySql::Insert(const string table,
 #ifdef DEBUG
 		printf("SimpleMySql::Insert success...\n");
 #endif	// ! DEBUG
+		UpdateUseResult();
 		return true;
 	}
 
@@ -173,10 +180,12 @@ bool SimpleMySql::Search(const string table,
 	if ( 0 == mysql_real_query(_mysql_ptr,
 							   cmd.c_str(),
 							   (unsigned int)cmd.length())) {
-#ifdef DEBUG
-		printf("SimpleMySql::Search success...\n");
-#endif	// ! DEBUG
-		return true;
+		UpdateUseResult();
+		if (_use_result != NULL) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 #ifdef DEBUG
 		printf("SimpleMySql::Search fail...\n");
@@ -200,9 +209,7 @@ bool SimpleMySql::Search(const string table, const string condition) {
 	if (0 == mysql_real_query(_mysql_ptr,
 							  cmd.c_str(), 
 							  (unsigned int)cmd.length())) {
-#ifdef DEBUG
-		printf("SimpleMySql::Search success...\n");
-#endif	// ! DEBUG
+		UpdateUseResult();
 		return true;
 	}
 
@@ -225,27 +232,25 @@ bool SimpleMySql::Update(const string table,
 #endif	// ! DEBUG
 		return false;
 	}
-	const string cmd = "upadta " + table + " set " + field + "=" + value
+	const string cmd = "update " + table + " set " + field + "=" + value
 				+ " where " + condition;
 	if (0 == mysql_real_query(_mysql_ptr,
 								cmd.c_str(),
 								(unsigned int)cmd.length())) {
-#ifdef DEBUG
-		printf("SimpleMySql::Update success...\n");
-#endif	// ! DEBUG
+		//UpdateUseResult();
 		return true;
 	}
 
+#ifdef DEBUG
+		printf("SimpleMySql::Update fail...\n");
+		printf("%s\n", mysql_error(_mysql_ptr));
+#endif	// ! DEBUG
 	return false;
 }
 
 
-MYSQL_RES *SimpleMySql::GetUseResult() {
-	if (false == _isinit) {
-		return NULL;
-	}
-
-	return mysql_use_result(_mysql_ptr); 
+MYSQL_RES *SimpleMySql::GetUseResult() const{
+	return _use_result; 
 }
 
 MYSQL_RES *SimpleMySql::GetStoreResult() {
@@ -260,8 +265,6 @@ bool SimpleMySql::FreeResult(MYSQL_RES *mysqlres) {
 	if (false == _isinit || NULL == mysqlres) {
 		return false;
 	}
-	std::vector<std::map<string, string> >res;
-	GetAllResult(mysqlres, res);
 	mysql_free_result(mysqlres);
 
 	return true;
@@ -341,3 +344,6 @@ bool SimpleMySql::FetchOneRow(MYSQL_RES *mysqlres, std::map<string, string> &row
 	return true;
 }
 
+void SimpleMySql::UpdateUseResult() {
+	_use_result = mysql_use_result(_mysql_ptr);
+}

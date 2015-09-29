@@ -41,7 +41,7 @@ public :
 				const string value,
 				const string condition);
 	bool GetAllResult(MYSQL_RES *mysqlres, std::vector<std::map<string, string> >& res);
-	MYSQL_RES *GetUseResult();
+	MYSQL_RES *GetUseResult() const;
 	MYSQL_RES *GetStoreResult();
 	bool FreeResult(MYSQL_RES *mysqlres);
 //	void SetLoginName(string name);
@@ -66,9 +66,11 @@ private :
 			  string db,
 			  string server);
 	bool FetchOneRow(MYSQL_RES *mysqlres, std::map<string, string>& row);
+	void UpdateUseResult();
 
 private :
 	MYSQL *_mysql_ptr;
+	MYSQL_RES *_use_result;
 	string _user;
 	string _password;
 	string _db;

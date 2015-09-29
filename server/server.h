@@ -43,7 +43,7 @@ class Server {
 				const std::string &email = "",
 				const std::string &address = "",
 				const std::string &phonenumber = "",
-				const std::string &shortphonenumber = "");
+				const std::string &shortphonenumber = "") = 0;
 		virtual bool Enroll(const std::string &name,
 				const std::string &password) = 0;
 		virtual void SetRegister(RegisterAction *ract_ptr) = 0;
@@ -96,10 +96,12 @@ class HttpServer: public Server {
 		bool AddFieldInHttpResponseHead(std::string &httprsph,
 				const std::string &field,
 				const std::string &value);
-		inline virtual void SetRegister(RegisterAction *ract_ptr);
-		inline virtual void SetEnroll(EnrollAction *eact_ptr);
-		inline virtual RegisterAction *GetRegister() const;
-		inline virtual EnrollAction *GetEnroll() const;
+		const std::string GetStateCode() const;
+		const std::string GetDscrpt() const;
+		virtual void SetRegister(RegisterAction *ract_ptr);
+		virtual void SetEnroll(EnrollAction *eact_ptr);
+		virtual RegisterAction *GetRegister() const;
+		virtual EnrollAction *GetEnroll() const;
 		int Socket();
 		int Accept(struct sockaddr *addr_ptr, socklen_t *len_ptr);
 		bool Bind();
@@ -111,6 +113,9 @@ class HttpServer: public Server {
 	protected :
 		socklen_t _isreuseaddr;
 		boost::shared_ptr<SimpleMySql> _spmysql_ptr;
+	private :
+		std::string _state_code;
+		std::string _dscrpt;
 };
 
 #endif

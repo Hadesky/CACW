@@ -5,12 +5,13 @@
  * ****************************************************/
 
 #include "enrollaction.h"
+#include "jsontransverter.h"
 #include "simplemysql.h"
+
+#include <vector>
 
 #ifdef DEBUG
 #include <cstdio>
-#include "jsontransverter.h"
-#include <vector>
 #endif	// ! DEBUG
 
 HttpEnrollAction::HttpEnrollAction() {
@@ -35,20 +36,19 @@ bool HttpEnrollAction::Enroll(const std::string &name,
 #ifdef DEBUG
 	printf("HttpEnrollAction::Enroll :\ncondition : %s", condition.c_str());
 #endif	// ! DEBUG
-	if( _spmysql_ptr->Search(string("CACWUser"), condition)) {
-#ifdef DEBUG
-		std::vector<std::map<string, string> >res;
-		std::map<string, string> temp;
+	if( _spmysql_ptr->Search(string("CACWUser"), condition) == false) {
+		typedef	std::vector<std::map<string, string> > JsonObj;
+		JsonObj res;
+		string temp;
 		string str;
 		_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), res);
-		for (std::vector<std::map<string, string> >::iterator iter = res.begin(); 
+		for (JsonObj::iterator iter = res.begin(); 
 				iter != res.end();
 				++iter) {
-			temp = *iter;
-			JsonTransverter::ToJsonString(temp, str);
-			printf("%s\n", str.c_str());
+			// temp = *iter;
+			JsonTransverter::ToJsonString(*iter, temp);
+			str += temp;
 		}
-#endif	//  !DEBUG
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 		return true;
 	}

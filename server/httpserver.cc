@@ -20,7 +20,10 @@
 #include <cstdio>
 #endif // ! DEBUG
 
-HttpServer::HttpServer() {
+HttpServer::HttpServer() 
+	:_isreuseaddr(0),
+	 _spmysql_ptr(),
+	 _state_code("") {
 	
 }
 
@@ -269,17 +272,17 @@ bool HttpServer::GetCommand(const std::string &request, std::string &command) {
 	}
 
 	std::size_t start_pos = request.find("Command");
+	if (std::string::npos == start_pos) {
 #ifdef DEBUG
 	printf("HttpServer::GetCommand :%ld\n", start_pos);
 #endif	// !DEBUG
-	if (std::string::npos == start_pos) {
 		return false;
 	}
 	std::size_t end_pos = request.find("\n", start_pos);
+	if (std::string::npos == end_pos) {
 #ifdef DEBUG
 	printf("HttpServer::GetCommand :%ld\n", end_pos);
 #endif	// !DEBUG
-	if (std::string::npos == end_pos) {
 		return false;
 	}
 	command.clear();
@@ -313,6 +316,14 @@ bool HttpServer::AddFieldInHttpResponseHead(std::string &httprsph,
 	httprsph.insert(pos, field + ": " + value);
 
 	return true;
+}
+
+const std::string HttpServer::GetStateCode() const {
+	return _state_code;
+}
+
+const std::string HttpServer::GetDscrpt() const {
+	return _dscrpt;
 }
 
 void HttpServer::SetRegister(RegisterAction *ract_ptr) {
