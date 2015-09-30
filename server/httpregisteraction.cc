@@ -25,7 +25,7 @@ bool HttpRegisterAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 	return true;
 }
 
-bool HttpRegisterAction::Register(const std::string &name,
+std::string HttpRegisterAction::Register(const std::string &name,
 							  const std::string &password,
 							  const std::string &sex,
 							  const std::string &email,
@@ -34,9 +34,12 @@ bool HttpRegisterAction::Register(const std::string &name,
 							  const std::string &shortphonenumber){
 	if (_spmysql_ptr->Search(std::string("CACWUser"), string("UserName"), name)) {
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
-		return false;
+#ifdef DEBUG
+		printf("HttpRegisterAction::Register the account is exist\n");
+#endif	// !DEBUG
+		return std::string("406 The account is existed");
 	}
-	const string field("UserName,\
+	static const string field("UserName,\
 UserPassword,\
 sex,\
 email,\
@@ -53,8 +56,7 @@ shortphonenumber");
 #ifdef DEBUG
 	printf("HttpRegisterAction::Register\nvalues : %s\n", values.c_str());
 #endif	// ! DEBUG
+	_spmysql_ptr->Insert(string("CACWUser"), field, values);
 
-	return _spmysql_ptr->Insert(string("CACWUser"), field, values);
+	return std::string("201 Register successfully");
 }
-
-

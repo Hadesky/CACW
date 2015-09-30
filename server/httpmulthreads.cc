@@ -106,6 +106,12 @@ pthread_mutex_t &HttpMulThreads::GetClientMutex() {
 }
 
 void *HttpMulThreads::Start_rtn(void *arg) {
+	auto AsHttpContext = [] (const std::size_t &length) {
+		static char buffer[16];
+		sprintf(buffer, "Content-Length: %ld\r\n\r\n", length);
+
+		return std::string(buffer);
+	};
 	pthread_detach(pthread_self());
 	int client_fd;
 	socklen_t client_addrlen = sizeof(struct sockaddr_in);
@@ -122,12 +128,10 @@ void *HttpMulThreads::Start_rtn(void *arg) {
 #ifdef DEBUG
 			printf("Start_rtn command : \n%s\n", command);
 #endif	// !DEBUG
-			std::string context(httpserver->Handle(command));
-			std::string res(httpserver->GetHttpResponseHead("HTTP/1.1",
-						httpserver->GetStateCode(),
-						httpserver->GetDscrpt()));
-			static char buffer[16];
-			sprintf(buffer, "Content-Length: %ld\r\n\r\n", context.size());
+			std::string context;
+			std::string state_and_phrase_str(httpserver->Handle(command, context));
+			std::string res(httpserver->GetHttpResponseHead("HTTP/1.1", state_and_phrase_str));
+			HttpServer::AddFieldInHttpResponseHead(res, AsHttpContext(context.size()));
 			write(client_fd, res.c_str(), res.size());
 		}
 		//  TO DO : add your code

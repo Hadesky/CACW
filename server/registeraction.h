@@ -23,7 +23,7 @@ class RegisterAction {
 		RegisterAction();
 		virtual ~RegisterAction();
 		virtual bool Init(boost::shared_ptr<SimpleMySql>spmysql_ptr);
-		virtual bool Register(const std::string &name,
+		virtual std::string Register(const std::string &name,
 				const std::string &password,
 				const std::string &sex = "",
 				const std::string &email = "",
@@ -41,7 +41,7 @@ class HttpRegisterAction: public RegisterAction {
 		HttpRegisterAction();
 		virtual bool Init(boost::shared_ptr<SimpleMySql> spmyql);
 		virtual ~HttpRegisterAction();
-		virtual bool Register(const std::string &name,
+		virtual std::string Register(const std::string &name,
 				const std::string &password,
 				const std::string &sex = "",
 				const std::string &email = "",

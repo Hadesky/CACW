@@ -29,7 +29,7 @@ bool HttpEnrollAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 	return true;
 }
 
-bool HttpEnrollAction::Enroll(const std::string &name,
+std::string HttpEnrollAction::Enroll(const std::string &name,
 							  const std::string &password){
 	const string condition = "UserName=\'" + name +
 								"\' AND " + "UserPassword=\'" + password + "\'";
@@ -50,12 +50,12 @@ bool HttpEnrollAction::Enroll(const std::string &name,
 			str += temp;
 		}
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
-		return true;
+		return std::string("202 Enroll successfully");
 	}
 	else {
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
-		return false;
+		return std::string("406 Account is nonexistent");
 	}
 
-	return false;
+	return std::string("500 Database search error");
 }

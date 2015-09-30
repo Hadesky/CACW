@@ -37,14 +37,14 @@ class Server {
 		virtual int GetSockfd() = 0;
 		virtual std::string Handle(const std::string &request) = 0;
 		virtual struct sockaddr_in *GetSocketAddress() = 0;
-		virtual bool Register(const std::string &name,
+		virtual std::string Register(const std::string &name,
 				const std::string &password,
 				const std::string &sex = "",
 				const std::string &email = "",
 				const std::string &address = "",
 				const std::string &phonenumber = "",
 				const std::string &shortphonenumber = "") = 0;
-		virtual bool Enroll(const std::string &name,
+		virtual std::string Enroll(const std::string &name,
 				const std::string &password) = 0;
 		virtual void SetRegister(RegisterAction *ract_ptr) = 0;
 		virtual void SetEnroll(EnrollAction *eact_ptr) = 0;
@@ -72,20 +72,21 @@ class HttpServer: public Server {
 		virtual void SetSocketfd(int sockfd);
 		virtual int GetSockfd();
 		virtual struct sockaddr_in *GetSocketAddress();
-		virtual bool Register(const std::string &name,
+		virtual std::string Register(const std::string &name,
 				const std::string &password,
 				const std::string &sex = "",
 				const std::string &email = "",
 				const std::string &address = "",
 				const std::string &phonenumber = "",
 				const std::string &shortphonenumber = "");
-		virtual bool Enroll(const std::string &name,
+		virtual std::string Enroll(const std::string &name,
 				const std::string &password);
 		void SetReuseAddr(bool flag);
 		bool IsReuseAddr();
-		std::string Get(const std::string &command);
-		std::string Post(const std::string &command);
-		std::string Handle(const std::string &request);
+		std::string Get(const std::string &command, std::string &res);
+		std::string Post(const std::string &command, std::string &res);
+		virtual std::string Handle(const std::string &request);
+		virtual std::string Handle(const std::string &request, std::string &res);
 		std::string GetURL(const std::string request);
 		bool GetURL(const std::string request, std::string &url);
 		bool GetMethod(const std::string &request, std::string &method);
@@ -93,9 +94,13 @@ class HttpServer: public Server {
 		std::string GetHttpResponseHead(const std::string &version,
 				const std::string &state_code,
 				const std::string &reason_phrase);
-		bool AddFieldInHttpResponseHead(std::string &httprsph,
+		std::string GetHttpResponseHead(const std::string &version,
+				const std::string &state_and_phrase_str);
+		static bool AddFieldInHttpResponseHead(std::string &httprsph,
 				const std::string &field,
 				const std::string &value);
+		static bool AddFieldInHttpResponseHead(std::string &httprsph,
+				const std::string &field_and_value);
 		const std::string GetStateCode() const;
 		const std::string GetDscrpt() const;
 		virtual void SetRegister(RegisterAction *ract_ptr);
