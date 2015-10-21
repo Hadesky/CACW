@@ -13,7 +13,8 @@ main.o: server.h main.cc
 	g++ $(DEBUG) $(STD) -g -c main.cc
 server.o: server.h server.cc
 	g++ $(DEBUG) $(STD) -g -c server.cc
-httpserver.o:httpserver.cc simplemysql.h enrollaction.h registeraction.h 
+httpserver.o:server.h httpserver.cc simplemysql.h enrollaction.h\
+	registeraction.h jsontransverter.h
 	g++ $(DEBUG) $(STD) -g -c httpserver.cc
 simplemysql.o:simplemysql.cc
 	g++ $(DEBUG) $(STD) -g -c simplemysql.cc
@@ -29,7 +30,7 @@ multhreads.o:multhreads.cc
 	g++ $(DEBUG) $(STD) -g -c multhreads.cc
 httpmulthreads.o:multhreads.h server.h httpmulthreads.cc
 	g++ $(DEBUG) $(STD) -g -c httpmulthreads.cc
-jsontransverter.o:
+jsontransverter.o:jsontransverter.h jsontransverter.cc
 	g++ $(DEBUG) $(STD) -g -c jsontransverter.cc
 .PHONY:
 clear:

@@ -11,6 +11,7 @@
 #include "value.h"
 
 #include <pthread.h>
+#include <string>
 
 
 class HttpServer;
@@ -48,6 +49,7 @@ protected :
 	static void *Start_rtn(void *arg);
 private :
 	DISALLOW_COPY_AND_ASSIGN(HttpMulThreads);
+	static std::string SizeToContext(const std::string::size_type &len);
 private :
 	HttpServer *_httpserver;
 };

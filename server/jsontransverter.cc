@@ -5,7 +5,6 @@
  * ********************************************************/
 
 #include "jsontransverter.h"
-#include "./json/json.h"
 
 JsonTransverter::JsonTransverter()
 	:_str(""){
@@ -23,6 +22,14 @@ JsonTransverter::~JsonTransverter() {
 
 bool JsonTransverter::Init() {
 	return true;
+}
+
+Json::Value JsonTransverter::ParseJsonString(const string &str) {
+	static Json::Reader *pjsonparser = new Json::Reader(Json::Features::strictMode());
+	static Json::Value value;
+	
+	pjsonparser->parse(str, value);
+	return value;
 }
 
 void JsonTransverter::ToJsonString(std::string &str) const{

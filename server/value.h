@@ -17,9 +17,9 @@
 const int NTHREADS = 10;
 
 //  socket waiting queue's length.
-const int QLEN = 10;
+//const int QLEN = 10;
 
 //  the buffer size.
-const int BUFFSIZE = 4096;
+//const int BUFFSIZE = 4096;
 
 #endif // !  SERVER_VALUE_H_

@@ -20,6 +20,16 @@
 #include <cstdio>
 #endif // ! DEBUG
 
+namespace {
+//  socket waiting queue's length.
+const int QLEN = 10;
+
+//  the buffer size.
+const int BUFFSIZE = 4096;
+}
+
+
+
 HttpServer::HttpServer() 
 	:_isreuseaddr(0),
 	 _spmysql_ptr(),
@@ -63,7 +73,7 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 	if (NULL == addr_ptr) {
 		_addr_ptr->sin_family = AF_INET;
 		_addr_ptr->sin_port = htons(8000);
-		_addr_ptr->sin_addr.s_addr = htonl(INADDR_ANY);
+		_addr_ptr->sin_addr.s_addr = htons(INADDR_ANY);
 	} else {
 		_addr_ptr->sin_family = addr_ptr->sin_family;
 		_addr_ptr->sin_port = addr_ptr->sin_port;
@@ -158,7 +168,9 @@ bool HttpServer::IsReuseAddr() {
 	return _isreuseaddr;
 }
 
-std::string HttpServer::Get(const std::string &command, std::string &res) {
+std::string HttpServer::Get(const std::string &command,
+		const string &context,
+		std::string &res){
 //#ifdef DEBUG
 //	printf("HttpServer::Get\n");
 //	printf("Register : \n");
@@ -167,20 +179,25 @@ std::string HttpServer::Get(const std::string &command, std::string &res) {
 //	Enroll("hahaha", "123456789");
 //#endif	// ! DEBUG
 	if ("login" == command) {
-		//  TO DO: Add your register code
-		return Enroll("", "");
+		//  TO DO: Add your login code
+		Json::Value value = JsonTransverter::ParseJsonString(context);
+
+		return Enroll(value["username"].asString(),
+				value["password"].asString());
 		//JsonTransverter::ToJsonString("{Result: log success}", res);
 	}
 	else if ("register" == command) {
-		//  TO DO: Add your enroll code
+		//  TO DO: Add your regiser code
 		return Register("", "");
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
 	
-	return string("");
+	return std::string("001");
 }
 
-std::string HttpServer::Post(const std::string &command, std::string &res) {
+std::string HttpServer::Post(const std::string &command,
+		const std::string &context,
+		std::string &res) {
 //#ifdef DEBUG
 //	printf("HttpServer::Post:\n");
 //	printf("Register : \n");
@@ -188,57 +205,61 @@ std::string HttpServer::Post(const std::string &command, std::string &res) {
 //	printf("Enroll : \n");
 //	Enroll("hahaha", "123456789");
 //#endif	// ! DEBUG
-	if ("register" == command) {
-		//  TO DO: Add your register code
-		//JsonTransverter::ToJsonString("{Result: register success}", res);
-#ifdef DEBUG
-		printf("HttpServer::Post: %s\n", res.c_str());
-#endif	// !DEBUG
-	}
-	else if ("login" == command) {
-		//  TO DO: Add your enroll code
-		// _enrollaction_ptr->Enroll("", "");
-		//JsonTransverter::ToJsonString("{Result: login success}", res);
-#ifdef DEBUG
-		printf("HttpServer::Post: %s\n", res.c_str());
-#endif	// !DEBUG
-	}
+	if ("login" == command) {
+		//  TO DO: Add your login code
+		Json::Value value = JsonTransverter::ParseJsonString(context);
 
-	return res;
+		return Enroll(value["username"].asString(),
+				value["password"].asString());
+		//JsonTransverter::ToJsonString("{Result: log success}", res);
+	}
+	else if ("register" == command) {
+		//  TO DO: Add your regiser code
+		return Register("", "");
+		//JsonTransverter::ToJsonString("{Result: register success}", res);
+	}
+	
+	return std::string("001");
 }
 
 std::string HttpServer::Handle(const std::string &request) {
 	std::string method;
 	std::string command;
+	std::string context = GetRequestContext(request);
 	std::string res;
+	std::string respone("001");
+
 	GetMethod(request, method);
 #ifdef DEBUG
 	printf("HttpServer::Handle...\n");
 #endif	// !DEBUG
 	GetCommand(request, command);
 	if (method == "GET") {
-		return Get(command, res);
+		respone = Get(command, context, res);
 	}
 	else if (method != "POST") {
-		return Post(command, res);
+		respone = Post(command, context, res);
 	}
 	
-	return "";
+	return respone;
 }
 
 std::string HttpServer::Handle(const std::string &request, std::string &res) {
 	std::string method;
 	std::string command;
+	std::string context = GetRequestContext(request);
+	std::string respone("001");
 	GetMethod(request, method);
 	GetCommand(request, command);
 	if (method == "GET") {
-		return Get(command, res);
+		//return Get(command, res);
+		respone = Get(command, context, res);
 	}
 	else if (method == "POST") {
-		return Post(command, res);
+		respone = Post(command, context, res);	
 	}
 	
-	return string("400 Syntax error: nonexistent command");
+	return respone;
 }
 
 std::string HttpServer::GetURL(const std::string request) {
@@ -321,7 +342,7 @@ std::string HttpServer::GetHttpResponseHead(const std::string &version,
 
 std::string HttpServer::GetHttpResponseHead(const std::string &version,
 		const std::string &state_and_phrase_str) {
-	return std::string(version + state_and_phrase_str + "\r\n\r\n");
+	return std::string(version + " " + state_and_phrase_str + "\r\n\r\n");
 }
 
 bool HttpServer::AddFieldInHttpResponseHead(std::string &httprsph,
@@ -344,7 +365,7 @@ bool HttpServer::AddFieldInHttpResponseHead(std::string &httprsph,
 	std::size_t pos = httprsph.rfind("\r\n");
 	if (pos == std::string::npos) {
 #ifdef DEBUG
-		printf("HttpServer::AddFieldInHttpResponseHead: not find \r\n");
+		printf("HttpServer::AddFieldInHttpResponseHead: not find \\r\\n");
 #endif	// !DEBUG
 		return false;
 	}
@@ -419,4 +440,16 @@ int HttpServer::Socket() {
 
 int HttpServer::Accept(struct sockaddr *addr_ptr, socklen_t *len_ptr) {
 	return accept(_sockfd, addr_ptr, len_ptr);
-} 
+}
+
+std::string HttpServer::GetRequestContext(const std::string &request) {
+	std::string::size_type pos = request.find("\r\n\r\n");
+	if (std::string::npos == pos) {
+#ifdef DEBUG
+		printf("HttpServer::GetRequestContext: can't find \\r\\n\\r\\n\n");
+#endif	// DEBUG
+		return std::string("");
+	}
+
+	return request.substr(pos +strlen("\r\n\r\n"));
+}

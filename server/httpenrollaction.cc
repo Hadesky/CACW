@@ -50,12 +50,12 @@ std::string HttpEnrollAction::Enroll(const std::string &name,
 			str += temp;
 		}
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
-		return std::string("202 Enroll successfully");
+		return std::string("000");
 	}
 	else {
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
-		return std::string("406 Account is nonexistent");
+		return std::string("001");
 	}
 
-	return std::string("500 Database search error");
+	return std::string("001");
 }

@@ -83,8 +83,12 @@ class HttpServer: public Server {
 				const std::string &password);
 		void SetReuseAddr(bool flag);
 		bool IsReuseAddr();
-		std::string Get(const std::string &command, std::string &res);
-		std::string Post(const std::string &command, std::string &res);
+		std::string Get(const std::string &command,
+				const std::string &context,
+				std::string &res);
+		std::string Post(const std::string &command,
+				const std::string &context,
+				std::string &res);
 		virtual std::string Handle(const std::string &request);
 		virtual std::string Handle(const std::string &request, std::string &res);
 		std::string GetURL(const std::string request);
@@ -114,6 +118,7 @@ class HttpServer: public Server {
 
 	private :
 		DISALLOW_COPY_AND_ASSIGN(HttpServer);
+		std::string GetRequestContext(const std::string &request);
 
 	protected :
 		socklen_t _isreuseaddr;
