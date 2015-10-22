@@ -118,7 +118,7 @@ class HttpServer: public Server {
 
 	private :
 		DISALLOW_COPY_AND_ASSIGN(HttpServer);
-		std::string GetRequestContext(const std::string &request);
+		std::string GetRequestContent(const std::string &request);
 
 	protected :
 		socklen_t _isreuseaddr;

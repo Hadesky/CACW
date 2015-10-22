@@ -178,7 +178,7 @@ std::string HttpServer::Get(const std::string &command,
 //	printf("Enroll : \n");
 //	Enroll("hahaha", "123456789");
 //#endif	// ! DEBUG
-	if ("login" == command) {
+	if ("001" == command) {
 		//  TO DO: Add your login code
 		Json::Value value = JsonTransverter::ParseJsonString(context);
 
@@ -186,7 +186,7 @@ std::string HttpServer::Get(const std::string &command,
 				value["password"].asString());
 		//JsonTransverter::ToJsonString("{Result: log success}", res);
 	}
-	else if ("register" == command) {
+	else if ("002" == command) {
 		//  TO DO: Add your regiser code
 		return Register("", "");
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
@@ -196,7 +196,7 @@ std::string HttpServer::Get(const std::string &command,
 }
 
 std::string HttpServer::Post(const std::string &command,
-		const std::string &context,
+		const std::string &content,
 		std::string &res) {
 //#ifdef DEBUG
 //	printf("HttpServer::Post:\n");
@@ -205,15 +205,15 @@ std::string HttpServer::Post(const std::string &command,
 //	printf("Enroll : \n");
 //	Enroll("hahaha", "123456789");
 //#endif	// ! DEBUG
-	if ("login" == command) {
+	if ("002" == command) {
 		//  TO DO: Add your login code
-		Json::Value value = JsonTransverter::ParseJsonString(context);
+		Json::Value value = JsonTransverter::ParseJsonString(content);
 
 		return Enroll(value["username"].asString(),
 				value["password"].asString());
 		//JsonTransverter::ToJsonString("{Result: log success}", res);
 	}
-	else if ("register" == command) {
+	else if ("003" == command) {
 		//  TO DO: Add your regiser code
 		return Register("", "");
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
@@ -225,7 +225,7 @@ std::string HttpServer::Post(const std::string &command,
 std::string HttpServer::Handle(const std::string &request) {
 	std::string method;
 	std::string command;
-	std::string context = GetRequestContext(request);
+	std::string context = GetRequestContent(request);
 	std::string res;
 	std::string respone("001");
 
@@ -247,16 +247,16 @@ std::string HttpServer::Handle(const std::string &request) {
 std::string HttpServer::Handle(const std::string &request, std::string &res) {
 	std::string method;
 	std::string command;
-	std::string context = GetRequestContext(request);
+	std::string content = GetRequestContent(request);
 	std::string respone("001");
 	GetMethod(request, method);
 	GetCommand(request, command);
 	if (method == "GET") {
 		//return Get(command, res);
-		respone = Get(command, context, res);
+		respone = Get(command, content, res);
 	}
 	else if (method == "POST") {
-		respone = Post(command, context, res);	
+		respone = Post(command, content, res);	
 	}
 	
 	return respone;
@@ -294,10 +294,10 @@ bool HttpServer::GetMethod(const std::string &request, std::string &method) {
 	if (pos <= 0) {
 		return false;
 	}
-	method.clear();
-	for (std::size_t i = 0; i < pos; ++i) {
-		method += request[i];
-	}
+	method = request.substr(0, pos);
+#ifdef DEBUG
+	printf("HttpServer::GetMethod : %s\n", method.c_str());
+#endif	//!DEBUG
 
 	return true;
 }
@@ -310,22 +310,10 @@ bool HttpServer::GetCommand(const std::string &request, std::string &command) {
 
 	std::size_t start_pos = request.find("command");
 	if (std::string::npos == start_pos) {
-#ifdef DEBUG
-	printf("HttpServer::GetCommand :%ld\n", start_pos);
-#endif	// !DEBUG
 		return false;
 	}
-	std::size_t end_pos = request.find("\n", start_pos);
-	if (std::string::npos == end_pos) {
-#ifdef DEBUG
-	printf("HttpServer::GetCommand :%ld\n", end_pos);
-#endif	// !DEBUG
-		return false;
-	}
-	command.clear();
-	for(start_pos += string("Command: ").size(); start_pos < end_pos; ++start_pos) {
-		command.push_back(request[start_pos]);
-	}
+	start_pos += strlen("command: "); 
+	command = request.substr(start_pos, 3);
 #ifdef DEBUG
 	printf("HttpServer::GetCommand : %s\n", command.c_str());
 #endif	//!DEBUG
@@ -442,7 +430,7 @@ int HttpServer::Accept(struct sockaddr *addr_ptr, socklen_t *len_ptr) {
 	return accept(_sockfd, addr_ptr, len_ptr);
 }
 
-std::string HttpServer::GetRequestContext(const std::string &request) {
+std::string HttpServer::GetRequestContent(const std::string &request) {
 	std::string::size_type pos = request.find("\r\n\r\n");
 	if (std::string::npos == pos) {
 #ifdef DEBUG

@@ -34,9 +34,9 @@ std::string HttpEnrollAction::Enroll(const std::string &name,
 	const string condition = "UserName=\'" + name +
 								"\' AND " + "UserPassword=\'" + password + "\'";
 #ifdef DEBUG
-	printf("HttpEnrollAction::Enroll :\ncondition : %s", condition.c_str());
+	printf("HttpEnrollAction::Enroll :\ncondition : %s\n", condition.c_str());
 #endif	// ! DEBUG
-	if( _spmysql_ptr->Search(string("CACWUser"), condition) == false) {
+	if( _spmysql_ptr->Search(string("CACWUser"), condition) == true) {
 		typedef	std::vector<std::map<string, string> > JsonObj;
 		JsonObj res;
 		string temp;
@@ -53,6 +53,7 @@ std::string HttpEnrollAction::Enroll(const std::string &name,
 		return std::string("000");
 	}
 	else {
+		printf("dasda\n");
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 		return std::string("001");
 	}
