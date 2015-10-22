@@ -308,7 +308,7 @@ bool HttpServer::GetCommand(const std::string &request, std::string &command) {
 		return false;
 	}
 
-	std::size_t start_pos = request.find("Command");
+	std::size_t start_pos = request.find("command");
 	if (std::string::npos == start_pos) {
 #ifdef DEBUG
 	printf("HttpServer::GetCommand :%ld\n", start_pos);

@@ -68,33 +68,7 @@ void HttpMulThreads::Loop() {
 #ifdef DEBUG
 	printf("HttpMulThreads main thread is looping\n");
 #endif // ! DEBUG
-	int client_fd;
-	socklen_t client_addrlen = sizeof(struct sockaddr_in);
-	struct sockaddr_in *client_addr_ptr;
-	char command[BUFFSIZE];
-	client_addr_ptr = new struct sockaddr_in;
-	while(true) {
-		pthread_mutex_lock(&GetClientMutex());
-		//  accept http request and Handle the request;
-		client_fd = _httpserver->Accept((struct sockaddr *)client_addr_ptr, &client_addrlen);
-		read(client_fd, command, BUFFSIZE);
-		if (BUFFSIZE > 0) {
-#ifdef DEBUG
-			printf("MainLoop command : \n%s\n", command);
-#endif	// !DEBUG
-			std::string context;
-			std::string respone(_httpserver->Handle(command, context));
-			std::string res(_httpserver->GetHttpResponseHead("HTTP/1.1", "200"));
-			HttpServer::AddFieldInHttpResponseHead(res, SizeToContext(context.size()));
-#ifdef DEBUG
-			printf("result is :%s\n", res.c_str());
-#endif
-			write(client_fd, res.c_str(), res.size());
-		}
-		//  TO DO : add your code
-		pthread_mutex_unlock(&GetClientMutex());
-		close(client_fd);
-	}
+	Thread(_httpserver);
 }
 
 
@@ -104,11 +78,27 @@ pthread_mutex_t &HttpMulThreads::GetClientMutex() {
 
 void *HttpMulThreads::Start_rtn(void *arg) {
 	pthread_detach(pthread_self());
+	Thread((HttpServer *)arg);
 
+	return NULL;
+}
+
+std::string HttpMulThreads::SizeToString(const std::string::size_type &len) {
+	static char buf[16];
+	sprintf(buf, "%ld", len);
+	
+	return std::string(buf); 
+}
+
+void HttpMulThreads::Closeall() {
+	MulThreads::Closeall();
+}
+
+void HttpMulThreads::Thread(HttpServer *httpserver) {
 	int client_fd;
 	socklen_t client_addrlen = sizeof(struct sockaddr_in);
 	struct sockaddr_in *client_addr_ptr;
-	HttpServer *httpserver = (HttpServer *)arg;
+//	HttpServer *httpserver = (HttpServer *)arg;
 	char command[BUFFSIZE];
 
 	client_addr_ptr = new struct sockaddr_in;
@@ -117,37 +107,23 @@ void *HttpMulThreads::Start_rtn(void *arg) {
 		//  accept http request and Handle the request;
 		client_fd = httpserver->Accept((struct sockaddr *)client_addr_ptr, &client_addrlen);
 		read(client_fd, command, BUFFSIZE);
-		if (BUFFSIZE > 0) {
 #ifdef DEBUG
-			printf("Start_rtn command : \n%s\n", command);
+		printf("Start_rtn command : \n%s\n", command);
 #endif	// !DEBUG
-			std::string context;
-			std::string respone(httpserver->Handle(command, context));
-			std::string res(httpserver->GetHttpResponseHead("HTTP/1.1",
-						"200",
-						""));
-			HttpServer::AddFieldInHttpResponseHead(res, SizeToContext(context.size()));
-#ifdef DEBUG
-			printf("result is :%s\n", res.c_str());
-#endif			
-			write(client_fd, res.c_str(), res.size());
-		}
+		std::string content;
+		std::string respone(httpserver->Handle(command, content));
+		std::string res(httpserver->GetHttpResponseHead("HTTP/1.1",
+					"200",
+					"OK"));
+		static const std::string cookie_str("Set-Cookie: respone=");
+		static const std::string content_len_str("Content-Length: ");
+
+		HttpServer::AddFieldInHttpResponseHead(res, content_len_str + SizeToString(content.size()));
+		HttpServer::AddFieldInHttpResponseHead(res, cookie_str + respone);
+		write(client_fd, res.c_str(), res.size());
 		//  TO DO : add your code
 		pthread_mutex_unlock(&GetClientMutex());
 		close(client_fd);
 	}
-
-	return NULL;
-}
-
-std::string HttpMulThreads::SizeToContext(const std::string::size_type &len) {
-	static char buf[16];
-	sprintf(buf, "Content-Length: %ld\r\n\r\n", len);
-	
-	return std::string(buf); 
-}
-
-void HttpMulThreads::Closeall() {
-	MulThreads::Closeall();
 }
 

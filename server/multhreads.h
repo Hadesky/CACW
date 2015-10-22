@@ -49,7 +49,8 @@ protected :
 	static void *Start_rtn(void *arg);
 private :
 	DISALLOW_COPY_AND_ASSIGN(HttpMulThreads);
-	static std::string SizeToContext(const std::string::size_type &len);
+	static std::string SizeToString(const std::string::size_type &len);
+	static void Thread(HttpServer *httpserver);
 private :
 	HttpServer *_httpserver;
 };
