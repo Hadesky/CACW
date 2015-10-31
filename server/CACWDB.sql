@@ -2,6 +2,7 @@ create table CACWUser(
 	UserName varchar(20) not null,
 	UserPassword varchar(20) not null,
 	UserID bigint not null primary key auto_increment,
+	RegCode	varchar(6),
 	Sex enum("male", "female"),
 	Email varchar(50),
 	Address varchar(100),

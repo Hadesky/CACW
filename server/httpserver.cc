@@ -178,9 +178,9 @@ std::string HttpServer::Get(const std::string &command,
 //	printf("Enroll : \n");
 //	Enroll("hahaha", "123456789");
 //#endif	// ! DEBUG
+	Json::Value value = JsonTransverter::ParseJsonString(context);
 	if ("001" == command) {
 		//  TO DO: Add your login code
-		Json::Value value = JsonTransverter::ParseJsonString(context);
 
 		return Enroll(value["username"].asString(),
 				value["password"].asString());
@@ -188,7 +188,9 @@ std::string HttpServer::Get(const std::string &command,
 	}
 	else if ("002" == command) {
 		//  TO DO: Add your regiser code
-		return Register("", "");
+		//Json::Value value = JsonTransverter::ParseJsonString(context);
+		return Register(value["username"].asString(),
+				value["password"].asString());
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
 	
