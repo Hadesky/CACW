@@ -8,6 +8,7 @@
 #include "jsontransverter.h"
 #include "multhreads.h"
 #include "registeraction.h"
+#include "session.h"
 #include "server.h"
 #include "simplemysql.h"
 
@@ -169,7 +170,8 @@ bool HttpServer::IsReuseAddr() {
 }
 
 std::string HttpServer::Get(const std::string &command,
-		const string &context,
+		const std::string sessionid,
+		const std::string &context,
 		std::string &res){
 //#ifdef DEBUG
 //	printf("HttpServer::Get\n");
@@ -198,6 +200,7 @@ std::string HttpServer::Get(const std::string &command,
 }
 
 std::string HttpServer::Post(const std::string &command,
+		const std::string &sessionid,
 		const std::string &content,
 		std::string &res) {
 //#ifdef DEBUG
@@ -220,6 +223,15 @@ std::string HttpServer::Post(const std::string &command,
 		return Register("", "");
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
+	else if ("005" == command) {
+		
+	}
+	else if ("006" == command) {
+		Session::GetInstance().Search(sessionid);
+		if (NULL == p) {
+			
+		}
+	}
 	
 	return std::string("001");
 }
@@ -227,20 +239,22 @@ std::string HttpServer::Post(const std::string &command,
 std::string HttpServer::Handle(const std::string &request) {
 	std::string method;
 	std::string command;
+	std::string sessionid = GetSeesionID(request);
 	std::string context = GetRequestContent(request);
 	std::string res;
 	std::string respone("001");
 
 	GetMethod(request, method);
+
 #ifdef DEBUG
 	printf("HttpServer::Handle...\n");
 #endif	// !DEBUG
 	GetCommand(request, command);
 	if (method == "GET") {
-		respone = Get(command, context, res);
+		respone = Get(command, sessionid, context, res);
 	}
 	else if (method != "POST") {
-		respone = Post(command, context, res);
+		respone = Post(command, sessionid, context, res);
 	}
 	
 	return respone;
@@ -249,6 +263,7 @@ std::string HttpServer::Handle(const std::string &request) {
 std::string HttpServer::Handle(const std::string &request, std::string &res) {
 	std::string method;
 	std::string command;
+	std::string sessionid = GetSeesionID(request);
 	std::string content = GetRequestContent(request);
 	std::string respone("001");
 	GetMethod(request, method);
@@ -258,7 +273,7 @@ std::string HttpServer::Handle(const std::string &request, std::string &res) {
 		respone = Get(command, content, res);
 	}
 	else if (method == "POST") {
-		respone = Post(command, content, res);	
+		respone = Post(command, sessionid, content, res);	
 	}
 	
 	return respone;
@@ -323,6 +338,22 @@ bool HttpServer::GetCommand(const std::string &request, std::string &command) {
 	return true;
 }
 
+std::string HttpServer::GetSeesionID(const std::string &request) {
+	if (request.empty()) {
+		return std::string("");
+	}
+	std::string::size_type start_pos = request.find("sessionid: ");
+	if (std::string::npos == start_pos) {
+		return string("");
+	}
+	std::string::size_type end_pos = request.find("\r\n", start_pos);
+	if (std::string::npos == end_pos) {
+		return std::string("");
+	}
+	start_pos += strlen("sessionid: ");
+
+	return request.substr(start_pos, end_pos - start_pos);
+}
 
 std::string HttpServer::GetHttpResponseHead(const std::string &version,
 		const std::string &state_code,

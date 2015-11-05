@@ -6,6 +6,8 @@
 
 #include "enrollaction.h"
 #include "jsontransverter.h"
+#include "md5.h"
+#include "session.h"
 #include "simplemysql.h"
 
 #include <vector>
@@ -50,10 +52,11 @@ std::string HttpEnrollAction::Enroll(const std::string &name,
 			str += temp;
 		}
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
-		return std::string("000");
+		Session::GetInstance().Insert(MD5::GetMD5String(name));
+		return std::string("000, sessionid=" + MD5::GetMD5String(name));
 	}
 	else {
-		printf("dasda\n");
+		//printf("dasda\n");
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 		return std::string("001");
 	}

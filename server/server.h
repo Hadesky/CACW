@@ -84,9 +84,11 @@ class HttpServer: public Server {
 		void SetReuseAddr(bool flag);
 		bool IsReuseAddr();
 		std::string Get(const std::string &command,
+				const std::string &sessionid,
 				const std::string &context,
 				std::string &res);
 		std::string Post(const std::string &command,
+				const std::string &sessionid,
 				const std::string &context,
 				std::string &res);
 		virtual std::string Handle(const std::string &request);
@@ -95,6 +97,7 @@ class HttpServer: public Server {
 		bool GetURL(const std::string request, std::string &url);
 		bool GetMethod(const std::string &request, std::string &method);
 		bool GetCommand(const std::string &request, std::string &command);
+		std::string GetSeesionID(const std::string &request);
 		std::string GetHttpResponseHead(const std::string &version,
 				const std::string &state_code,
 				const std::string &reason_phrase);
