@@ -33,12 +33,12 @@ bool HttpEnrollAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 
 std::string HttpEnrollAction::Enroll(const std::string &name,
 							  const std::string &password){
-	const string condition = "UserName=\'" + name +
-								"\' AND " + "UserPassword=\'" + password + "\'";
+	const string condition = "username=\'" + name +
+								"\' AND " + "password=\'" + password + "\'";
 #ifdef DEBUG
 	printf("HttpEnrollAction::Enroll :\ncondition : %s\n", condition.c_str());
 #endif	// ! DEBUG
-	if( _spmysql_ptr->Search(string("CACWUser"), condition) == true) {
+	if( _spmysql_ptr->Search(string("CUser"), condition) == true) {
 		typedef	std::vector<std::map<string, string> > JsonObj;
 		JsonObj res;
 		string temp;

@@ -27,36 +27,30 @@ bool HttpRegisterAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 
 std::string HttpRegisterAction::Register(const std::string &name,
 							  const std::string &password,
-							  const std::string &sex,
 							  const std::string &email,
-							  const std::string &address,
-							  const std::string &phonenumber,
-							  const std::string &shortphonenumber){
-	if (_spmysql_ptr->Search(std::string("CACWUser"), string("UserName"), name)) {
+							  const std::string &sex,
+							  const std::string &authcode){
+	if (_spmysql_ptr->Search(std::string("CUser"), string("username"), name)) {
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 #ifdef DEBUG
 		printf("HttpRegisterAction::Register the account is exist\n");
 #endif	// !DEBUG
-		return std::string("406 The account is existed");
+		return std::string("001");
 	}
-	static const string field("UserName,\
-UserPassword,\
+	static const string field("username,\
+password,\
 sex,\
-email,\
-address,\
-phonenumber,\
-shortphonenumber");
+email");
 #ifdef DEBUG
 	printf("HttpRegisterAction::Register\nfield : %s\n", field.c_str());
 #endif	// ! DEBUG
 	const string values = "\"" + name + "\",\"" +password +"\",\"" +
-		sex + "\",\"" + email + "\",\"" + address + "\",\"" +
-		phonenumber + "\",\"" + shortphonenumber + "\""; 
+		sex + "\",\"" + email + "\""; 
 
 #ifdef DEBUG
 	printf("HttpRegisterAction::Register\nvalues : %s\n", values.c_str());
 #endif	// ! DEBUG
 	_spmysql_ptr->Insert(string("CACWUser"), field, values);
 
-	return std::string("201 Register successfully");
+	return std::string("000");
 }

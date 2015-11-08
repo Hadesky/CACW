@@ -25,11 +25,8 @@ bool RegisterAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 
 std::string RegisterAction::Register(const std::string &name,
 							  const std::string &password,
-							  const std::string &sex,
 							  const std::string &email,
-							  const std::string &address,
-							  const std::string &phonenumber,
-							  const std::string &shortphonenumber
-							  ) {
+							  const std::string &sex,
+							  const std::string &authcode) {
 	return std::string("");		
 }

@@ -170,7 +170,7 @@ bool HttpServer::IsReuseAddr() {
 }
 
 std::string HttpServer::Get(const std::string &command,
-		const std::string sessionid,
+		const std::string &sessionid,
 		const std::string &context,
 		std::string &res){
 //#ifdef DEBUG
@@ -180,23 +180,25 @@ std::string HttpServer::Get(const std::string &command,
 //	printf("Enroll : \n");
 //	Enroll("hahaha", "123456789");
 //#endif	// ! DEBUG
-	Json::Value value = JsonTransverter::ParseJsonString(context);
-	if ("001" == command) {
-		//  TO DO: Add your login code
+//	Json::Value value = JsonTransverter::ParseJsonString(context);
+//	if ("001" == command) {
+//		//  TO DO: Add your login code
+//
+//		return Enroll(value["username"].asString(),
+//				value["password"].asString());
+//		//JsonTransverter::ToJsonString("{Result: log success}", res);
+//	}
+//	else if ("002" == command) {
+//		//  TO DO: Add your regiser code
+//		//Json::Value value = JsonTransverter::ParseJsonString(context);
+//		return Register(value["username"].asString(),
+//				value["password"].asString());
+//		//JsonTransverter::ToJsonString("{Result: register success}", res);
+//	}
+//	
+//	return std::string("001");
 
-		return Enroll(value["username"].asString(),
-				value["password"].asString());
-		//JsonTransverter::ToJsonString("{Result: log success}", res);
-	}
-	else if ("002" == command) {
-		//  TO DO: Add your regiser code
-		//Json::Value value = JsonTransverter::ParseJsonString(context);
-		return Register(value["username"].asString(),
-				value["password"].asString());
-		//JsonTransverter::ToJsonString("{Result: register success}", res);
-	}
-	
-	return std::string("001");
+	return Post(command, sessionid, context, res);
 }
 
 std::string HttpServer::Post(const std::string &command,
@@ -220,17 +222,23 @@ std::string HttpServer::Post(const std::string &command,
 	}
 	else if ("003" == command) {
 		//  TO DO: Add your regiser code
-		return Register("", "");
+		Json::Value value = JsonTransverter::ParseJsonString(content);
+
+		return Register(value["username"].asString(),
+						value["password"].asString(),
+						value["email"].asString(),
+						value["sex"].asString(),
+						value["AUTHcode"].asString());
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
 	else if ("005" == command) {
 		
 	}
 	else if ("006" == command) {
-		Session::GetInstance().Search(sessionid);
-		if (NULL == p) {
-			
+		if (!Session::GetInstance().Visit(sessionid)) {
+			return "001";
 		}
+		_spmysql_ptr->Query("select USERID, ");
 	}
 	
 	return std::string("001");
