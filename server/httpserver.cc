@@ -139,17 +139,13 @@ std::string HttpServer::Register(const std::string &name,
 		const std::string &password,
 		const std::string &sex,
 		const std::string &email,
-		const std::string &address,
-		const std::string &phonenumber,
-		const std::string &shortphonenumber){
+		const std::string &authcode){
 
 	return _registeraction_ptr->Register(name,
 			password,
 			sex,
 			email,
-			address,
-			phonenumber,
-			shortphonenumber);
+			authcode);
 }
 
 std::string HttpServer::Enroll(const std::string &name,
@@ -171,7 +167,7 @@ bool HttpServer::IsReuseAddr() {
 
 std::string HttpServer::Get(const std::string &command,
 		const std::string &sessionid,
-		const std::string &context,
+		const std::string &content,
 		std::string &res){
 //#ifdef DEBUG
 //	printf("HttpServer::Get\n");
@@ -198,7 +194,7 @@ std::string HttpServer::Get(const std::string &command,
 //	
 //	return std::string("001");
 
-	return Post(command, sessionid, context, res);
+	return Post(command, sessionid, content, res);
 }
 
 std::string HttpServer::Post(const std::string &command,
@@ -232,7 +228,9 @@ std::string HttpServer::Post(const std::string &command,
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
 	else if ("005" == command) {
-		
+		// 获取验证码，并将验证码发送给email邮箱
+		Json::Value value = JsonTransverter::ParseJsonString(content);
+		return _registeraction_ptr->GetAuthCode(value["email"].asString());
 	}
 	else if ("006" == command) {
 		if (!Session::GetInstance().Visit(sessionid)) {
@@ -278,7 +276,7 @@ std::string HttpServer::Handle(const std::string &request, std::string &res) {
 	GetCommand(request, command);
 	if (method == "GET") {
 		//return Get(command, res);
-		respone = Get(command, content, res);
+		respone = Get(command, sessionid, content, res);
 	}
 	else if (method == "POST") {
 		respone = Post(command, sessionid, content, res);	
@@ -482,3 +480,4 @@ std::string HttpServer::GetRequestContent(const std::string &request) {
 
 	return request.substr(pos +strlen("\r\n\r\n"));
 }
+

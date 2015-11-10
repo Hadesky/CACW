@@ -56,7 +56,6 @@ std::string HttpEnrollAction::Enroll(const std::string &name,
 		return std::string("000, sessionid=" + MD5::GetMD5String(name));
 	}
 	else {
-		//printf("dasda\n");
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 		return std::string("001");
 	}

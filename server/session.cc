@@ -10,6 +10,8 @@ namespace {
 const time_t d = 30 * 60;
 }
 
+
+
 Session::Session(const time_t &d) 
 	: _duration(d) {
 
@@ -27,6 +29,10 @@ Session &Session::GetInstance() {
 
 bool Session::Init() {
 	return true;
+}
+
+time_t Session::GetDuration() {
+	return d;
 }
 
 void Session::Insert(const string &sid) {
@@ -153,6 +159,3 @@ SessionNodePtr Session::ChangeChild(const SessionNodePtr &parent,
 
 	return oldchild;
 }
-
-
-

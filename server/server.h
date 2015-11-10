@@ -39,11 +39,9 @@ class Server {
 		virtual struct sockaddr_in *GetSocketAddress() = 0;
 		virtual std::string Register(const std::string &name,
 				const std::string &password,
-				const std::string &sex = "",
-				const std::string &email = "",
-				const std::string &address = "",
-				const std::string &phonenumber = "",
-				const std::string &shortphonenumber = "") = 0;
+				const std::string &sex,
+				const std::string &email,
+				const std::string &authcode) = 0;
 		virtual std::string Enroll(const std::string &name,
 				const std::string &password) = 0;
 		virtual void SetRegister(RegisterAction *ract_ptr) = 0;
@@ -74,22 +72,20 @@ class HttpServer: public Server {
 		virtual struct sockaddr_in *GetSocketAddress();
 		virtual std::string Register(const std::string &name,
 				const std::string &password,
-				const std::string &sex = "",
-				const std::string &email = "",
-				const std::string &address = "",
-				const std::string &phonenumber = "",
-				const std::string &shortphonenumber = "");
+				const std::string &sex,
+				const std::string &email,
+				const std::string &authcode);
 		virtual std::string Enroll(const std::string &name,
 				const std::string &password);
 		void SetReuseAddr(bool flag);
 		bool IsReuseAddr();
 		std::string Get(const std::string &command,
 				const std::string &sessionid,
-				const std::string &context,
+				const std::string &content,
 				std::string &res);
 		std::string Post(const std::string &command,
 				const std::string &sessionid,
-				const std::string &context,
+				const std::string &content,
 				std::string &res);
 		virtual std::string Handle(const std::string &request);
 		virtual std::string Handle(const std::string &request, std::string &res);
@@ -122,7 +118,6 @@ class HttpServer: public Server {
 	private :
 		DISALLOW_COPY_AND_ASSIGN(HttpServer);
 		std::string GetRequestContent(const std::string &request);
-
 	protected :
 		socklen_t _isreuseaddr;
 		boost::shared_ptr<SimpleMySql> _spmysql_ptr;
