@@ -40,6 +40,7 @@ public :
 				const string field,
 				const string value,
 				const string condition);
+	//  获取查询的结果，存储在row中，如果查询的结果为空集，则返回false
 	bool GetAllResult(MYSQL_RES *mysqlres, std::vector<std::map<string, string> >& res);
 	MYSQL_RES *GetUseResult() const;
 	MYSQL_RES *GetStoreResult();

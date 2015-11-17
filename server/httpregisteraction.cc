@@ -21,13 +21,12 @@ namespace {
 }
 
 HttpRegisterAction::HttpRegisterAction() 
-	: _atctree(InitAtCTree()),
-	_smtpmail(InitSMTPMail()) {
+	: _atctree(InitAtCTree()) {
 	
 }
 
 HttpRegisterAction::~HttpRegisterAction() {
-
+	delete _atctree;
 }
 
 bool HttpRegisterAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
@@ -41,7 +40,9 @@ std::string HttpRegisterAction::Register(const std::string &name,
 		const std::string &email,
 		const std::string &sex,
 		const std::string &authcode){
-	if (_spmysql_ptr->Search(std::string("CUser"), string("username"), name)) {
+	std::vector<std::map<std::string, std::string> > row;
+	if (_spmysql_ptr->Search(std::string("CUser"), std::string("username"), name)
+			&& !_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), row)) {
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 #ifdef DEBUG
 		printf("HttpRegisterAction::Register the account is exist\n");
@@ -70,19 +71,25 @@ HttpRegisterAction::AuthCodeTree *HttpRegisterAction::InitAtCTree() {
 	return new AuthCodeTree();
 }
 
-Mail::SMTPMail *HttpRegisterAction::InitSMTPMail() {
-	Mail::SMTPMail *p = new Mail::SMTPMail("sky-tm", "learning", "smtp@qq.com");
-	return p;
-}
 
 std::string HttpRegisterAction::GetAuthCode(const std::string &email) {
 	std::string code = AuthCodeTree::GetAuthCode();
+#ifdef DEBUG
+	printf("email: %s\n", email.c_str());
+#endif
 	if (!_atctree->Add(email, code)) {
 		//	往AuthCode数据结构中插入数据
 		return std::string("001");
 	}
-	_smtpmail->SendEmail(email, code);
-	return "000";
+#ifdef DEBUG
+	printf("email: %s\n", email.c_str());
+#endif
+	boost::shared_ptr<Mail::SMTPMail> p(new Mail::SMTPMail("sky-tm", "learning", "smtp.qq.com"));
+	printf("p is null ?\n");
+	p->SendEmail(email, "欢迎注册CACW账号，您的验证码是:" + code + "\n\r\n\r-----蚂蚁团队");
+	printf("p is null ?\n");
+
+	return std::string("000");
 }
 
 
@@ -163,7 +170,7 @@ HttpRegisterAction::AuthCodeTree::~AuthCodeTree() {
 
 std::string HttpRegisterAction::AuthCodeTree::GetAuthCode() {
 	std::string code;
-	time(NULL);
+	srand((unsigned int)time(NULL));
 	for (int i = 0; i < HttpRegisterAction::AuthCodeTree::AUTHCODELENGTH; ++i) {
 		code.push_back(rand() % 10 + '0');
 	}
@@ -193,7 +200,8 @@ bool HttpRegisterAction::AuthCodeTree::Insert(AuthCodeNode *parent,
 		return true;
 	}
 	if (email == p->GetEmail()) {
-		return false;
+		p->SetAuthCode(authcode);
+		return true;
 	}
 	else if (email < p->GetEmail()) {
 		if(false == Insert(p, p->GetLeftChild(), email, authcode)) {

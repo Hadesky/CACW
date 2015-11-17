@@ -41,6 +41,8 @@ HttpServer::HttpServer()
 HttpServer::~HttpServer() {
 	delete _addr_ptr;
 	delete _multhreads_ptr;
+	delete _registeraction_ptr;
+	delete _enrollaction_ptr;
 }
 
 bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
@@ -227,7 +229,7 @@ std::string HttpServer::Post(const std::string &command,
 						value["AUTHcode"].asString());
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
-	else if ("005" == command) {
+	else if ("004" == command) {
 		// 获取验证码，并将验证码发送给email邮箱
 		Json::Value value = JsonTransverter::ParseJsonString(content);
 		return _registeraction_ptr->GetAuthCode(value["email"].asString());

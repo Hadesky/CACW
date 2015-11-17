@@ -177,7 +177,7 @@ bool SimpleMySql::Search(const string table,
 #ifdef DEBUG
 	printf("SimpleMySql::Search\n%s\n", cmd.c_str());
 #endif	// ! DEBUG
-	if ( 0 == mysql_real_query(_mysql_ptr,
+	if (0 == mysql_real_query(_mysql_ptr,
 							   cmd.c_str(),
 							   (unsigned int)cmd.length())) {
 		UpdateUseResult();
@@ -210,7 +210,10 @@ bool SimpleMySql::Search(const string table, const string condition) {
 							  cmd.c_str(), 
 							  (unsigned int)cmd.length())) {
 		UpdateUseResult();
-		return true;
+		if (_use_result != NULL) {
+			return true;
+		}
+		return false;
 	}
 
 #ifdef DEBUG
@@ -246,6 +249,28 @@ bool SimpleMySql::Update(const string table,
 		printf("%s\n", mysql_error(_mysql_ptr));
 #endif	// ! DEBUG
 	return false;
+}
+
+bool SimpleMySql::GetAllResult(MYSQL_RES *mysqlres, std::vector<std::map<string, string> >&res) {
+	std::map<string, string> row;
+#ifdef DEBUG
+	printf("SimpleMySql::GetAllResult\n");
+#endif	// !DEBUG
+	while (FetchOneRow(mysqlres,row)) {
+#ifdef DEBUG
+		for (std::map<string, string>::iterator it = row.begin();
+				it != row.end();
+				++it) {
+			printf("key : %s, values : %s\n", it->first.c_str(), it->second.c_str());
+		}
+#endif	// ! DEBUG
+		res.push_back(row);
+	}
+	if (res.size() == 0) {
+		//	如果查询结果为空集
+		return false;
+	}
+	return true;
 }
 
 
@@ -302,25 +327,6 @@ bool SimpleMySql::Init(string user,
 #ifdef DEBUG
 		printf("SimpleMySql::connected success...\n");
 #endif	// ! DEBUG
-
-	return true;
-}
-
-bool SimpleMySql::GetAllResult(MYSQL_RES *mysqlres, std::vector<std::map<string, string> >&res) {
-	std::map<string, string> row;
-#ifdef DEBUG
-	printf("SimpleMySql::GetAllResult\n");
-#endif	// !DEBUG
-	while (FetchOneRow(mysqlres,row)) {
-#ifdef DEBUG
-		for (std::map<string, string>::iterator it = row.begin();
-				it != row.end();
-				++it) {
-			printf("key : %s, values : %s\n", it->first.c_str(), it->second.c_str());
-		}
-#endif	// ! DEBUG
-		res.push_back(row);
-	}
 
 	return true;
 }

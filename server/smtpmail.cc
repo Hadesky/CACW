@@ -33,6 +33,7 @@ namespace Mail {
 	_password(Base64Encode(password)),
 	_host(host){
 		//_paddrfilter = InitAddrInfoFilter();
+	
 	}
 
 
@@ -67,7 +68,6 @@ namespace Mail {
 			log(str, strlen(str));
 			return NULL;
 		}
-		_islogin = true;
 
 		return p;
 	}
@@ -86,54 +86,67 @@ namespace Mail {
 			}
 			res = res->ai_next;
 		}
-
 		return false;	
 	}
 	
 	bool SMTPMail::Login() {
-		auto Check = [] (const String &res,
-				const String &mode) -> void {
-			if (res.substr(0, 3) != mode) {
-				log(res.c_str(), res.length());
-			}
-		};
-
-		Send(String("HELO "+ _username +"\r\n"));
-		Check(Recv(), "250");
+		Send(String("EHLO "+ _username +"\r\n"));
+		if (!(Check("EHLO", Recv(), "250"))) {
+			return false;		
+		}
 		
 		Send(String("auth login\r\n"));
-		Check(Recv(), "334");
+		if (!Check("auth login", Recv(), "334")) {
+			return false;
+		}
 		
 		Send(Base64Encode(_username) + "\r\n");
-		Check(Recv(), "334");
+		if (!Check("enter username", Recv(), "334")) {
+			return false;
+		}
 
 		Send(String(_password + "\r\n"));
-		Check(Recv(), "334");
+		if (!Check("enter password", Recv(), "235")) {
+			return false;
+		}
 
 		return true;
 	}
 
 	void SMTPMail::SendEmail(const String &to, const String &text) {
-		if(false == _islogin) {
-			return;
+		if (false == _islogin) {
+			return ;
 		}
+
+		Check("start", Recv(), "220");
 		if (!Login()) {
 			return ;
 		}
+
 		Send(String("MAIL FROM: <" + _username + ">\r\n"));
-		Recv();
+		if (!Check("MAIL FROM: ", Recv(), "250")){
+			return ;
+		}
 	
 		Send(String("RCPT TO: <" + to + ">\r\n"));
-		Recv();
+		if (!Check("RCPT TO: ", Recv(), "250")) {
+			return ;
+		}
 		
 		Send(String("DATA\r\n"));
-		Recv();
+		if (!Check("DATA: ", Recv(), "354")) {
+			return ;
+		}
 
 		Send(String("to:" + to + "\r\n" + text + "\r\n.\r\n"));
-		Recv();
+		if (!Check("to : ", Recv(), "250")) {
+			return ;
+		}
 
 		Send(String("QUIT\r\n"));
-		Recv();
+		if (!Check("QUIT", Recv(), "221")) {
+			return ;
+		}
 	}
 
 	void SMTPMail::Send(const String &msg) {
@@ -155,4 +168,15 @@ namespace Mail {
 
 		return String(buf);
 	}
+	bool SMTPMail::Check(const String &cmd,
+			const String &res,
+			const String &mode) {
+		if (res.substr(0, 3) != mode) {
+			String l (cmd + " command error: " + res); 
+			log(l.c_str(), l.length());
+			return false;
+		}
+		return true;
+	};
 }
+

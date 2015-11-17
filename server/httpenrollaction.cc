@@ -34,7 +34,7 @@ bool HttpEnrollAction::Init(boost::shared_ptr<SimpleMySql> spmysql_ptr) {
 std::string HttpEnrollAction::Enroll(const std::string &name,
 							  const std::string &password){
 	const string condition = "username=\'" + name +
-								"\' AND " + "password=\'" + password + "\'";
+								"\' AND " + "password=\'" + MD5::GetMD5String(password) + "\'";
 #ifdef DEBUG
 	printf("HttpEnrollAction::Enroll :\ncondition : %s\n", condition.c_str());
 #endif	// ! DEBUG
@@ -43,17 +43,21 @@ std::string HttpEnrollAction::Enroll(const std::string &name,
 		JsonObj res;
 		string temp;
 		string str;
-		_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), res);
-		for (JsonObj::iterator iter = res.begin(); 
-				iter != res.end();
-				++iter) {
-			// temp = *iter;
-			JsonTransverter::ToJsonString(*iter, temp);
-			str += temp;
+		if (_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), res)) {
+			for (JsonObj::iterator iter = res.begin(); 
+					iter != res.end();
+					++iter) {
+				// temp = *iter;
+				JsonTransverter::ToJsonString(*iter, temp);
+				str += temp;
+
+			}
+			_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
+			Session::GetInstance().Insert(MD5::GetMD5String(name));
+			return std::string("000, sessionid=" + MD5::GetMD5String(name));
 		}
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
-		Session::GetInstance().Insert(MD5::GetMD5String(name));
-		return std::string("000, sessionid=" + MD5::GetMD5String(name));
+		return std::string("001");
 	}
 	else {
 		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());

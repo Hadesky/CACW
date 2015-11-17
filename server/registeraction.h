@@ -7,8 +7,6 @@
 #ifndef _REGISTERACTION_H
 #define _REGISTERACTION_H
 
-#include "smtpmail.h"
-
 #include <boost/smart_ptr.hpp>
 #include <string>
 
@@ -87,8 +85,8 @@ class HttpRegisterAction: public RegisterAction {
 			bool Search(const std::string &email, const std::string &code);
 			bool Add(const std::string &email);
 			//  添加一个新的结点，如果成功则返回true
-			//  失败的原因可能为：
-			//		
+			//  如果这个邮箱已经对应了一个已存在的结点，则更新验证码
+			//  返回true
 			bool Add(const std::string &email, const std::string &code);
 		private :
 			DISALLOW_COPY_AND_ASSIGN(AuthCodeTree);
@@ -116,11 +114,9 @@ class HttpRegisterAction: public RegisterAction {
 			AuthCodeNode *_root;
 	};
 	AuthCodeTree *InitAtCTree();
-	Mail::SMTPMail *InitSMTPMail();
 
 	private :
 		AuthCodeTree *_atctree;
-		Mail::SMTPMail *_smtpmail;
 };
 
 

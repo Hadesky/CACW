@@ -44,6 +44,9 @@ private:
 	bool Login();
 	void Send(const String &msg);
 	String Recv();
+	bool Check(const String &cmd, 
+			const String &res,
+			const String &mode);
 private :
 	bool _islogin;
 	socklen_t _reuseaddr;	//make the address can be reuse
@@ -51,8 +54,7 @@ private :
 	AddrType *_paddrfilter;		//返回的地址信息的过滤器
 	String _username;
 	String _password;
-	String _host;
-	
+	String _host;	
 };
 }	// namespace Mail
 
