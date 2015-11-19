@@ -7,7 +7,6 @@
 #include "md5.h"
 #include "registeraction.h"
 #include "simplemysql.h"
-#include "smtpmail.h"
 
 #ifdef DEBUG
 #include <cstdio>
@@ -41,14 +40,17 @@ std::string HttpRegisterAction::Register(const std::string &name,
 		const std::string &sex,
 		const std::string &authcode){
 	std::vector<std::map<std::string, std::string> > row;
-	if (_spmysql_ptr->Search(std::string("CUser"), std::string("username"), name)
-			&& !_spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), row)) {
-		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
+
+	if (_spmysql_ptr->Search(std::string("CUser"), std::string("username"), name) 
+			&& _spmysql_ptr->GetAllResult(_spmysql_ptr->GetUseResult(), row)) {
 #ifdef DEBUG
-		printf("HttpRegisterAction::Register the account is exist\n");
-#endif	// !DEBUG
+		printf("HttpRegisterAction::Register account is exist or search error\n");
+#endif	// !DEBUG			
+
+		_spmysql_ptr->FreeResult(_spmysql_ptr->GetUseResult());
 		return std::string("001");
 	}
+
 	if (!_atctree->Search(email, authcode)) {
 		return std::string("001");
 	}
@@ -74,21 +76,12 @@ HttpRegisterAction::AuthCodeTree *HttpRegisterAction::InitAtCTree() {
 
 std::string HttpRegisterAction::GetAuthCode(const std::string &email) {
 	std::string code = AuthCodeTree::GetAuthCode();
-#ifdef DEBUG
-	printf("email: %s\n", email.c_str());
-#endif
 	if (!_atctree->Add(email, code)) {
 		//	往AuthCode数据结构中插入数据
 		return std::string("001");
 	}
-#ifdef DEBUG
-	printf("email: %s\n", email.c_str());
-#endif
-	boost::shared_ptr<Mail::SMTPMail> p(new Mail::SMTPMail("sky-tm", "learning", "smtp.qq.com"));
-	printf("p is null ?\n");
-	p->SendEmail(email, "欢迎注册CACW账号，您的验证码是:" + code + "\n\r\n\r-----蚂蚁团队");
-	printf("p is null ?\n");
-
+	std::string command = "python mail.py " + email + " " + code;
+	system(command.c_str());
 	return std::string("000");
 }
 
@@ -197,6 +190,11 @@ bool HttpRegisterAction::AuthCodeTree::Insert(AuthCodeNode *parent,
 		const std::string &authcode) {
 	if (NULL == p) {
 		p = new AuthCodeNode(parent, email,authcode);
+		if (parent == NULL) {
+			_root = p;
+		} else {
+			ChangeChild(parent, NULL, p);
+		}
 		return true;
 	}
 	if (email == p->GetEmail()) {
@@ -327,13 +325,23 @@ bool HttpRegisterAction::AuthCodeTree::Delete(AuthCodeNode *p,
 void HttpRegisterAction::AuthCodeTree::ChangeChild(AuthCodeNode *parent,
 		AuthCodeNode *oldchild,
 		AuthCodeNode *newchild) {
-	newchild->SetParent(parent);
-	if (parent->GetLeftChild() == oldchild) {
-		//  如果当前结点为其父结点的左孩子
-		parent->SetLeftChild(newchild);
-	} 
-	else if (parent->GetRightChild() == oldchild) {
-		parent->SetRightChild(newchild);
+	if (parent != NULL) {
+		if (parent->GetLeftChild() == oldchild) {
+			//  如果当前结点为其父结点的左孩子
+			parent->SetLeftChild(newchild);
+		} 
+		else if (parent->GetRightChild() == oldchild) {
+			parent->SetRightChild(newchild);
+		}
+		else {
+			// 如果不是右孩子也不是左孩子，就什么都不做
+			return ;
+		}
+		if (newchild != NULL) {
+			newchild->SetParent(parent);
+		}
+	} else {
+		_root = newchild;
 	}
 }
 

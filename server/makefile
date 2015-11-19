@@ -1,7 +1,7 @@
 OBJ = main.o server.o httpserver.o simplemysql.o enrollaction.o\
 	  registeraction.o httpenrollaction.o httpregisteraction.o\
 	  multhreads.o httpmulthreads.o jsontransverter.o md5.o session.o\
-	  sessionnode.o smtpmail.o
+	  sessionnode.o
 
 DEBUG = -DDEBUG
 STD=-std=c++11
@@ -25,7 +25,7 @@ registeraction.o:registeraction.h registeraction.cc
 	g++ $(DEBUG) $(STD) -g -c registeraction.cc
 httpenrollaction.o: simplemysql.h httpenrollaction.cc jsontransverter.h
 	g++ $(DEBUG) $(STD) -g -c httpenrollaction.cc
-httpregisteraction.o: simplemysql.h httpregisteraction.cc md5.h smtpmail.h
+httpregisteraction.o: simplemysql.h httpregisteraction.cc md5.h
 	g++ $(DEBUG) $(STD) -g -c httpregisteraction.cc
 multhreads.o:multhreads.cc
 	g++ $(DEBUG) $(STD) -g -c multhreads.cc
@@ -37,10 +37,6 @@ session.o:session.h session.cc
 	g++ $(DEBUG) $(STD) -g -c session.cc
 sessionnode.o:session.h sessionnode.cc
 	g++ $(DEBUG) $(STD) -g -c sessionnode.cc
-md5.o:md5.h md5.cc
-	g++ $(DEBUG) $(STD) -g -c md5.cc
-smtpmail.o:smtpmail.h smtpmail.cc
-	g++ $(DEBUG) $(STD) -g -c smtpmail.cc
 .PHONY:
 clear:
 	-rm *.o main

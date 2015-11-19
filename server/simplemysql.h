@@ -24,6 +24,7 @@ using std::string;
 
 class SimpleMySql {
 public :
+	typedef std::vector<std::map<std::string, std::string> > JsonObj;
 	virtual ~SimpleMySql();
 //	static SimpleMySql *GetInstance();
 	static boost::shared_ptr<SimpleMySql> & 
@@ -32,9 +33,11 @@ public :
 				string pwd = "",
 				string db = "");
 	bool Query(const string str);
-	bool Insert(const string table, const string field, const string value);
-	bool Search(const string table, const string field, const string value);
-	bool Search(const string table, const string condition);
+	bool Insert(const string &table, const string &field, const string &value);
+	bool Search(const string &table, const string &field, const string &value);
+	bool Search(const string &table, const string &condition);
+	bool Search(const string &table, const string &field, const string &value, JsonObj &obj);
+	bool Search(const string &table, const string &condition, JsonObj &obj);
 //	bool Alter(const string str);
 	bool Update(const string table,
 				const string field,

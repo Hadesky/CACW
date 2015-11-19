@@ -127,9 +127,9 @@ bool SimpleMySql::Query(const string cmd) {
 	return false;
 }
 
-bool SimpleMySql::Insert(const string table,
-						 const string field, 
-						 const string value) {
+bool SimpleMySql::Insert(const string &table,
+						 const string &field, 
+						 const string &value) {
 	if(GetInstance().use_count() == 0 || NULL == _mysql_ptr) {
 #ifdef DEBUG
 		printf("SimpleMySql::Insert\n\
@@ -161,9 +161,9 @@ bool SimpleMySql::Insert(const string table,
 	return false;
 }
 
-bool SimpleMySql::Search(const string table,
-						 const string field,
-						 const string value) {
+bool SimpleMySql::Search(const string &table,
+						 const string &field,
+						 const string &value) {
 	if(GetInstance().use_count() == 0 || NULL == _mysql_ptr) {
 #ifdef DEBUG
 		printf("SimpleMySql::Search\n\
@@ -196,7 +196,7 @@ bool SimpleMySql::Search(const string table,
 }
 
 
-bool SimpleMySql::Search(const string table, const string condition) {
+bool SimpleMySql::Search(const string &table, const string &condition) {
 	if(GetInstance().use_count() == 0 || NULL == _mysql_ptr) {
 #ifdef DEBUG
 		printf("SimpleMySql::Search\n\
@@ -221,6 +221,27 @@ bool SimpleMySql::Search(const string table, const string condition) {
 		printf("%s\n", mysql_error(_mysql_ptr));
 #endif	// ! DEBUG
 	return false;
+}
+
+
+bool SimpleMySql::Search(const string &table,
+						 const string &field,
+						 const string &value,
+						 JsonObj &obj) {
+	if (!Search(table, field, value)) {
+		return false;
+	}
+
+	return GetAllResult(GetUseResult(), obj);
+}
+
+bool SimpleMySql::Search(const string &table,
+		const string &condition,
+		JsonObj &obj) {
+	if (!Search(table, condition)) {
+		return false;
+	}
+	return GetAllResult(GetUseResult(), obj);
 }
 
 bool SimpleMySql::Update(const string table,
@@ -337,7 +358,7 @@ bool SimpleMySql::FetchOneRow(MYSQL_RES *mysqlres, std::map<string, string> &row
 	MYSQL_FIELD *fields = mysql_fetch_fields(mysqlres);
 	
 //#ifdef DEBUG
-//		printf("mysqlrow_ptr:%p\ncolumn:%d\nfields:%p", mysqlrow_ptr, column, fields);
+//		printf("mysqlrow_ptr:%p\ncolumn:%d\nfields:%p\n", mysqlrow_ptr, column, fields);
 //#endif	// !DEBUG
 	if (NULL == mysqlrow_ptr || column <= 0 || NULL == fields) {
 		return false;
