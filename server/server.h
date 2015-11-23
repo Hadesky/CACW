@@ -118,12 +118,25 @@ class HttpServer: public Server {
 	private :
 		DISALLOW_COPY_AND_ASSIGN(HttpServer);
 		std::string GetRequestContent(const std::string &request);
-	protected :
-		socklen_t _isreuseaddr;
-		boost::shared_ptr<SimpleMySql> _spmysql_ptr;
+		static std::string SizeToString(const std::string::size_type &len);
+		void Loop();
+		inline static pthread_mutex_t &GetClientMutex();
+		static void *Start_rtn(void *arg);
 	private :
 		std::string _state_code;
 		std::string _dscrpt;
+		socklen_t _isreuseaddr;
+		boost::shared_ptr<SimpleMySql> _spmysql_ptr;
+};
+
+class MulThreadMsg {
+public :
+	MulThreadMsg(int fd, HttpServer *server);
+	int GetClientFd();
+	HttpServer *GetServer();
+private :
+	int _clientfd;
+	HttpServer *_server;
 };
 
 #endif

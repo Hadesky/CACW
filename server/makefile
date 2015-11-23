@@ -26,11 +26,15 @@ registeraction.o:registeraction.h registeraction.cc
 httpenrollaction.o: simplemysql.h httpenrollaction.cc jsontransverter.h
 	g++ $(DEBUG) $(STD) ${GDB} -c httpenrollaction.cc
 httpregisteraction.o: simplemysql.h httpregisteraction.cc md5.h
+<<<<<<< HEAD
 	g++ $(DEBUG) $(STD) ${GDB} -c httpregisteraction.cc
 multhreads.o:multhreads.cc
 	g++ $(DEBUG) $(STD) ${GDB} -c multhreads.cc
 httpmulthreads.o:multhreads.h server.h httpmulthreads.cc
 	g++ $(DEBUG) $(STD) ${GDB} -c httpmulthreads.cc
+httpregister
+	g++ $(DEBUG) $(STD) -g -c httpregisteraction.cc
+>>>>>>> e8a24b2bab36df06cae810cb361ec40c1dd0237f
 jsontransverter.o:jsontransverter.h jsontransverter.cc
 	g++ $(DEBUG) $(STD) ${GDB} -c jsontransverter.cc
 md5.o:md5.h md5.cc
