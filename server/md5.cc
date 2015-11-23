@@ -34,6 +34,7 @@ documentation and/or software.
 #include "md5.h"
 
 /* system implementation headers */
+#include <stdio.h>
 #include <string.h>
 #include <stdio.h>
 

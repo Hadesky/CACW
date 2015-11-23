@@ -74,6 +74,9 @@ HttpRegisterAction::AuthCodeTree *HttpRegisterAction::InitAtCTree() {
 
 
 std::string HttpRegisterAction::GetAuthCode(const std::string &email) {
+	if (email.empty()) {
+		return std::string("001");
+	}
 	std::string code = AuthCodeTree::GetAuthCode();
 	if (!_atctree->Add(email, code)) {
 		//	往AuthCode数据结构中插入数据

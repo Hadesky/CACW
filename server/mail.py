@@ -19,10 +19,12 @@ subject = 'CACW authcode'
 smtpserver = 'smtp.qq.com'
 username = '453589103@qq.com'
 password = 'testmail'
-content = 'welcome to register CACW account!\n\r\tyour authcode:' + sys.argv[2]
+content = 'welcome to register CACW account!\n\r\t Your authcode:' + sys.argv[2]
 
-msg = MIMEText(content, "text", "utf-8")
+msg = MIMEText(content,'plain', 'utf-8')
 msg['Subject'] = Header(subject, 'utf-8')
+msg['to'] = receiver
+msg['from'] = sender
 
 smtp = smtplib.SMTP()
 smtp.connect('smtp.qq.com')
