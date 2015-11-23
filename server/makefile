@@ -1,6 +1,6 @@
 OBJ = main.o server.o httpserver.o simplemysql.o enrollaction.o\
 	  registeraction.o httpenrollaction.o httpregisteraction.o\
-	  multhreads.o httpmulthreads.o jsontransverter.o md5.o session.o\
+	  jsontransverter.o md5.o session.o\
 	  sessionnode.o
 
 DEBUG = -DDEBUG
@@ -27,10 +27,6 @@ httpenrollaction.o: simplemysql.h httpenrollaction.cc jsontransverter.h
 	g++ $(DEBUG) $(STD) -g -c httpenrollaction.cc
 httpregisteraction.o: simplemysql.h httpregisteraction.cc md5.h
 	g++ $(DEBUG) $(STD) -g -c httpregisteraction.cc
-multhreads.o:multhreads.cc
-	g++ $(DEBUG) $(STD) -g -c multhreads.cc
-httpmulthreads.o:multhreads.h server.h httpmulthreads.cc
-	g++ $(DEBUG) $(STD) -g -c httpmulthreads.cc
 jsontransverter.o:jsontransverter.h jsontransverter.cc
 	g++ $(DEBUG) $(STD) -g -c jsontransverter.cc
 md5.o:md5.h md5.cc

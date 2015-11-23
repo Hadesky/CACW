@@ -6,7 +6,7 @@
 
 #include "enrollaction.h"
 #include "jsontransverter.h"
-#include "multhreads.h"
+//#include "multhreads.h"
 #include "registeraction.h"
 #include "session.h"
 #include "server.h"
@@ -22,25 +22,25 @@
 #endif // ! DEBUG
 
 namespace {
-//  socket waiting queue's length.
-const int QLEN = 10;
+	//  socket waiting queue's length.
+	const int QLEN = 10;
 
-//  the buffer size.
-const int BUFFSIZE = 4096;
+	//  the buffer size.
+	const int BUFFSIZE = 4096;
 }
 
 
 
-HttpServer::HttpServer() 
-	:_isreuseaddr(0),
-	 _spmysql_ptr(),
-	 _state_code("") {
-	
-}
+HttpServer::HttpServer() :
+	_state_code(""),
+	_isreuseaddr(0),
+	_spmysql_ptr(){
+
+	}
 
 HttpServer::~HttpServer() {
 	delete _addr_ptr;
-	delete _multhreads_ptr;
+	//	delete _multhreads_ptr;
 	delete _registeraction_ptr;
 	delete _enrollaction_ptr;
 }
@@ -51,7 +51,7 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 #endif // ! DEBUG
 	_addr_ptr = new struct sockaddr_in;
 	_isreuseaddr = 1;
-	_multhreads_ptr = new HttpMulThreads(this);
+	//	_multhreads_ptr = new HttpMulThreads(this);
 	_registeraction_ptr = new HttpRegisterAction();
 	_enrollaction_ptr = new HttpEnrollAction();
 	_spmysql_ptr = SimpleMySql::GetInstance("localhost",
@@ -59,7 +59,7 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 			"mysqllearning",
 			"CACWDB");
 
-	_multhreads_ptr->Init();
+	//	_multhreads_ptr->Init();
 	_registeraction_ptr->Init(_spmysql_ptr);
 	_enrollaction_ptr->Init(_spmysql_ptr);
 	if (sockfd < 0) {
@@ -82,12 +82,12 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 		_addr_ptr->sin_port = addr_ptr->sin_port;
 		_addr_ptr->sin_addr.s_addr = addr_ptr->sin_addr.s_addr;
 	}
-	
+
 	setsockopt(_sockfd,
-			   SOL_SOCKET,
-			   SO_REUSEADDR,
-			   &_isreuseaddr,
-			   sizeof(_isreuseaddr));
+			SOL_SOCKET,
+			SO_REUSEADDR,
+			&_isreuseaddr,
+			sizeof(_isreuseaddr));
 
 	if (!Bind()) {
 		return false;
@@ -100,22 +100,22 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 }
 
 void HttpServer::Start() {
-	_multhreads_ptr->Loop();	
-//	char buf[BUFSIZE];
-//	struct sockaddr_in client_addr;
-//
-//	while (true) {
-//		int clientfd;
-//		socklen_t client_addr_len;
-//		if ( (clientfd = accept(_sockfd, 
-//								(struct sockaddr *)&client_addr,
-//								&client_addr_len)) < 0) {
-//			close(_sockfd);
-//			return ;
-//		}
-//		int n = recv(clientfd, buf, BUFSIZE, MSG_ERRQUEUE);
-//		buf[n] = '\0';
-//	}
+	Loop();	
+	//	char buf[BUFSIZE];
+	//	struct sockaddr_in client_addr;
+	//
+	//	while (true) {
+	//		int clientfd;
+	//		socklen_t client_addr_len;
+	//		if ( (clientfd = accept(_sockfd, 
+	//								(struct sockaddr *)&client_addr,
+	//								&client_addr_len)) < 0) {
+	//			close(_sockfd);
+	//			return ;
+	//		}
+	//		int n = recv(clientfd, buf, BUFSIZE, MSG_ERRQUEUE);
+	//		buf[n] = '\0';
+	//	}
 
 
 }
@@ -169,30 +169,30 @@ std::string HttpServer::Get(const std::string &command,
 		const std::string &sessionid,
 		const std::string &content,
 		std::string &res){
-//#ifdef DEBUG
-//	printf("HttpServer::Get\n");
-//	printf("Register : \n");
-//	Register("hahaha", "123456789");
-//	printf("Enroll : \n");
-//	Enroll("hahaha", "123456789");
-//#endif	// ! DEBUG
-//	Json::Value value = JsonTransverter::ParseJsonString(context);
-//	if ("001" == command) {
-//		//  TO DO: Add your login code
-//
-//		return Enroll(value["username"].asString(),
-//				value["password"].asString());
-//		//JsonTransverter::ToJsonString("{Result: log success}", res);
-//	}
-//	else if ("002" == command) {
-//		//  TO DO: Add your regiser code
-//		//Json::Value value = JsonTransverter::ParseJsonString(context);
-//		return Register(value["username"].asString(),
-//				value["password"].asString());
-//		//JsonTransverter::ToJsonString("{Result: register success}", res);
-//	}
-//	
-//	return std::string("001");
+	//#ifdef DEBUG
+	//	printf("HttpServer::Get\n");
+	//	printf("Register : \n");
+	//	Register("hahaha", "123456789");
+	//	printf("Enroll : \n");
+	//	Enroll("hahaha", "123456789");
+	//#endif	// ! DEBUG
+	//	Json::Value value = JsonTransverter::ParseJsonString(context);
+	//	if ("001" == command) {
+	//		//  TO DO: Add your login code
+	//
+	//		return Enroll(value["username"].asString(),
+	//				value["password"].asString());
+	//		//JsonTransverter::ToJsonString("{Result: log success}", res);
+	//	}
+	//	else if ("002" == command) {
+	//		//  TO DO: Add your regiser code
+	//		//Json::Value value = JsonTransverter::ParseJsonString(context);
+	//		return Register(value["username"].asString(),
+	//				value["password"].asString());
+	//		//JsonTransverter::ToJsonString("{Result: register success}", res);
+	//	}
+	//	
+	//	return std::string("001");
 
 	return Post(command, sessionid, content, res);
 }
@@ -201,13 +201,13 @@ std::string HttpServer::Post(const std::string &command,
 		const std::string &sessionid,
 		const std::string &content,
 		std::string &res) {
-//#ifdef DEBUG
-//	printf("HttpServer::Post:\n");
-//	printf("Register : \n");
-//	Register("hahaha", "123456789");
-//	printf("Enroll : \n");
-//	Enroll("hahaha", "123456789");
-//#endif	// ! DEBUG
+	//#ifdef DEBUG
+	//	printf("HttpServer::Post:\n");
+	//	printf("Register : \n");
+	//	Register("hahaha", "123456789");
+	//	printf("Enroll : \n");
+	//	Enroll("hahaha", "123456789");
+	//#endif	// ! DEBUG
 	if ("002" == command) {
 		//  TO DO: Add your login code
 		Json::Value value = JsonTransverter::ParseJsonString(content);
@@ -221,10 +221,10 @@ std::string HttpServer::Post(const std::string &command,
 		Json::Value value = JsonTransverter::ParseJsonString(content);
 
 		return Register(value["username"].asString(),
-						value["password"].asString(),
-						value["email"].asString(),
-						value["sex"].asString(),
-						value["AUTHcode"].asString());
+				value["password"].asString(),
+				value["email"].asString(),
+				value["sex"].asString(),
+				value["AUTHcode"].asString());
 		//JsonTransverter::ToJsonString("{Result: register success}", res);
 	}
 	else if ("004" == command) {
@@ -238,7 +238,7 @@ std::string HttpServer::Post(const std::string &command,
 		}
 		_spmysql_ptr->Query("select USERID, ");
 	}
-	
+
 	return std::string("001");
 }
 
@@ -262,7 +262,7 @@ std::string HttpServer::Handle(const std::string &request) {
 	else if (method != "POST") {
 		respone = Post(command, sessionid, context, res);
 	}
-	
+
 	return respone;
 }
 
@@ -281,7 +281,7 @@ std::string HttpServer::Handle(const std::string &request, std::string &res) {
 	else if (method == "POST") {
 		respone = Post(command, sessionid, content, res);	
 	}
-	
+
 	return respone;
 }
 
@@ -340,7 +340,7 @@ bool HttpServer::GetCommand(const std::string &request, std::string &command) {
 #ifdef DEBUG
 	printf("HttpServer::GetCommand : %s\n", command.c_str());
 #endif	//!DEBUG
-	
+
 	return true;
 }
 
@@ -427,8 +427,8 @@ EnrollAction *HttpServer::GetEnroll() const {
 
 bool HttpServer::Bind() {
 	if (bind(_sockfd,
-			 (struct sockaddr *)_addr_ptr,
-			 sizeof(*_addr_ptr)) < 0) {
+				(struct sockaddr *)_addr_ptr,
+				sizeof(*_addr_ptr)) < 0) {
 		if (_sockfd >= 0) {
 			close(_sockfd);
 		}
@@ -481,3 +481,91 @@ std::string HttpServer::GetRequestContent(const std::string &request) {
 	return request.substr(pos +strlen("\r\n\r\n"));
 }
 
+pthread_mutex_t &HttpServer::GetClientMutex() {
+	static pthread_mutex_t s_client_mutex = PTHREAD_MUTEX_INITIALIZER;
+	return s_client_mutex;
+}
+
+void *HttpServer::Start_rtn(void *arg) {
+	pthread_detach(pthread_self());
+	MulThreadMsg *msg = (MulThreadMsg *)arg;
+	char command[BUFFSIZE];
+	read(msg->GetClientFd(), command, BUFFSIZE);
+	//		if (strlen(command) <= 0) {
+	//			continue;
+	//		}
+#ifdef DEBUG
+	printf("Start_rtn command : \n%s\n", command);
+#endif	// !DEBUG
+	pthread_mutex_lock(&GetClientMutex());
+	std::string content;
+	std::string respone(msg->GetServer()->Handle(command, content));
+	std::string res(msg->GetServer()->GetHttpResponseHead("HTTP/1.1",
+				"200",
+				"OK"));
+	static const std::string cookie_str("Set-Cookie: respone=");
+	static const std::string content_len_str("Content-Length: ");
+
+	HttpServer::AddFieldInHttpResponseHead(res,
+			content_len_str + SizeToString(content.size()));
+	HttpServer::AddFieldInHttpResponseHead(res, cookie_str + respone);
+	write(msg->GetClientFd(), res.c_str(), res.size());
+	//  TO DO : add your code
+	pthread_mutex_unlock(&GetClientMutex());
+	close(msg->GetClientFd());
+
+	// 不能在其他地方delete，否则的话就会在线程没有执行完之前释放空
+	delete msg;
+
+	return NULL;
+}
+
+std::string HttpServer::SizeToString(const std::string::size_type &len) {
+	static char buf[16];
+	sprintf(buf, "%ld", len);
+
+	return std::string(buf); 
+}
+
+void HttpServer::Loop() {
+	int client_fd;
+	socklen_t client_addrlen = sizeof(struct sockaddr_in);
+	struct sockaddr_in *client_addr_ptr;
+	//	HttpServer *httpserver = (HttpServer *)arg;
+
+	client_addr_ptr = new struct sockaddr_in;
+	while(true) {
+		//  accept http request and Handle the request;
+		client_fd = Accept((struct sockaddr *)client_addr_ptr,
+				&client_addrlen);
+		MulThreadMsg *msg = new MulThreadMsg(client_fd, this);
+		pthread_t ptid;
+		if (pthread_create(&ptid,
+					NULL,
+					&Start_rtn,
+					(void *)msg) != 0) {
+			return ;	
+		}
+	}
+}
+
+// ********************************************************
+// MulThreadMsg class
+
+
+MulThreadMsg::MulThreadMsg(int fd, HttpServer *server):
+	_clientfd(fd), _server(server) {
+	
+}
+
+int MulThreadMsg::GetClientFd() {
+	return _clientfd;
+}
+
+HttpServer *MulThreadMsg::GetServer() {
+	return _server;
+}
+
+
+// end MulThreadMsg class
+// ********************************************************
