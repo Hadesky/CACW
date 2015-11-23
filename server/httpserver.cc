@@ -100,9 +100,7 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 }
 
 void HttpServer::Start() {
-	_multhreads_ptr->Create(NTHREADS);
-	_multhreads_ptr->Loop();
-	
+	_multhreads_ptr->Loop();	
 //	char buf[BUFSIZE];
 //	struct sockaddr_in client_addr;
 //

@@ -7,9 +7,9 @@ DEBUG = -DDEBUG
 STD=-std=c++11
 JSONLIBPATH=./jsonlib/
 
-main: $(OBJ)
+main.exe: $(OBJ)
 	g++ $(DEBUG) $(STD) -L $(JSONLIBPATH) -g $(OBJ) \
-		-lmysqlclient -lpthread -ljson_linux-gcc-4.8_libmt -o main 
+		-lmysqlclient -lpthread -ljson_linux-gcc-4.8_libmt -o main.exe
 main.o: server.h main.cc
 	g++ $(DEBUG) $(STD) -g -c main.cc
 server.o: server.h server.cc
@@ -41,4 +41,4 @@ sessionnode.o:session.h sessionnode.cc
 	g++ $(DEBUG) $(STD) -g -c sessionnode.cc
 .PHONY:
 clear:
-	-rm *.o main
+	-rm *.o *.exe

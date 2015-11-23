@@ -21,9 +21,7 @@ public :
 	MulThreads();
 	virtual ~MulThreads();
 	virtual bool Init();
-	virtual bool Create(const unsigned int nthreads) = 0;
 	virtual void Loop() = 0;
-	virtual void Closeall() = 0;
 	static pthread_mutex_t &GetClientMutex();
 protected :
 	static void *Start_rtn(void *);
@@ -36,8 +34,10 @@ public :
 
 class MulThreadMsg {
 public :
-
-priavte :
+	MulThreadMsg(int fd, HttpServer *server);
+	int GetClientFd();
+	HttpServer *GetServer();
+private :
 	int _clientfd;
 	HttpServer *_server;
 };
@@ -49,16 +49,13 @@ public :
 	virtual ~HttpMulThreads();
 	virtual bool Init();
 	virtual bool Init(HttpServer *httpserver);
-	virtual bool Create(const unsigned int nthreads);
 	virtual void Loop();
-	virtual void Closeall();
 	inline static pthread_mutex_t &GetClientMutex();
 protected :
 	static void *Start_rtn(void *arg);
 private :
 	DISALLOW_COPY_AND_ASSIGN(HttpMulThreads);
 	static std::string SizeToString(const std::string::size_type &len);
-	static void Thread(HttpServer *httpserver);
 private :
 	HttpServer *_httpserver;
 };
