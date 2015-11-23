@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef DEBUG
 #include <cstdio>
@@ -50,16 +51,16 @@ bool HttpMulThreads::Create(const unsigned int nthreads) {
 #ifdef DEBUG
 	printf("HttpMulThreads Creating %d threads\n", nthreads);
 #endif // ! DEBUG 
-	_nthreads = nthreads;
-	_threads_ptr = new pthread_t[_nthreads];
-	for(unsigned int i = 0; i < nthreads; ++i) {
-		if (pthread_create(&_threads_ptr[i],
-					NULL,
-					&Start_rtn,
-					(void *)_httpserver) != 0) {
-			return false;	
-		}
-	}
+//	_nthreads = nthreads;
+//	_threads_ptr = new pthread_t[_nthreads];
+//	for(unsigned int i = 0; i < nthreads; ++i) {
+//		if (pthread_create(&_threads_ptr[i],
+//					NULL,
+//					&Start_rtn,
+//					(void *)_httpserver) != 0) {
+//			return false;	
+//		}
+//	}
 
 	return true;
 }
@@ -105,8 +106,12 @@ void HttpMulThreads::Thread(HttpServer *httpserver) {
 	while(true) {
 		pthread_mutex_lock(&GetClientMutex());
 		//  accept http request and Handle the request;
-		client_fd = httpserver->Accept((struct sockaddr *)client_addr_ptr, &client_addrlen);
+		client_fd = httpserver->Accept((struct sockaddr *)client_addr_ptr,
+				&client_addrlen);
 		read(client_fd, command, BUFFSIZE);
+//		if (strlen(command) <= 0) {
+//			continue;
+//		}
 #ifdef DEBUG
 		printf("Start_rtn command : \n%s\n", command);
 #endif	// !DEBUG
@@ -118,7 +123,8 @@ void HttpMulThreads::Thread(HttpServer *httpserver) {
 		static const std::string cookie_str("Set-Cookie: respone=");
 		static const std::string content_len_str("Content-Length: ");
 
-		HttpServer::AddFieldInHttpResponseHead(res, content_len_str + SizeToString(content.size()));
+		HttpServer::AddFieldInHttpResponseHead(res,
+				content_len_str + SizeToString(content.size()));
 		HttpServer::AddFieldInHttpResponseHead(res, cookie_str + respone);
 		write(client_fd, res.c_str(), res.size());
 		//  TO DO : add your code

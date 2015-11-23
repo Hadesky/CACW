@@ -34,6 +34,14 @@ public :
 	pthread_t *_threads_ptr;
 };
 
+class MulThreadMsg {
+public :
+
+priavte :
+	int _clientfd;
+	HttpServer *_server;
+};
+
 class HttpMulThreads: public MulThreads {
 public :
 	HttpMulThreads();

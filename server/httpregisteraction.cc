@@ -205,6 +205,7 @@ bool HttpRegisterAction::AuthCodeTree::Delete(const std::string &email, const st
 			oldnode->GetNext()->SetParent(p);
 			p->SetNext(oldnode->GetNext());
 			delete oldnode;
+			return true;
 		}
 	}
 

@@ -33,6 +33,8 @@ httpmulthreads.o:multhreads.h server.h httpmulthreads.cc
 	g++ $(DEBUG) $(STD) -g -c httpmulthreads.cc
 jsontransverter.o:jsontransverter.h jsontransverter.cc
 	g++ $(DEBUG) $(STD) -g -c jsontransverter.cc
+md5.o:md5.h md5.cc
+	g++ $(DEBUG) $(STD) -g -c md5.cc
 session.o:session.h session.cc
 	g++ $(DEBUG) $(STD) -g -c session.cc
 sessionnode.o:session.h sessionnode.cc
