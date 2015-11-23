@@ -51,28 +51,27 @@ class HttpRegisterAction: public RegisterAction {
 		DISALLOW_COPY_AND_ASSIGN(HttpRegisterAction);
 	class AuthCodeNode {
 		public :
-			AuthCodeNode(AuthCodeNode *const parent,
+			AuthCodeNode(
+					AuthCodeNode *const parent,
+					AuthCodeNode *const next,
 					const std::string &email,
 					const std::string &authcode);
 			~AuthCodeNode();
-			inline std::string GetEmail() const;
-			inline std::string GetAuthCode() const;
-			inline AuthCodeNode *GetLeftChild() const;
-			inline AuthCodeNode *GetRightChild() const;
-			inline AuthCodeNode *GetParent() const;
-			void SetEmail(const std::string &email);
-			void SetAuthCode(const std::string &authcode);
-			void SetLeftChild(AuthCodeNode *const p);
-			void SetRightChild(AuthCodeNode *const p);
+			AuthCodeNode *GetNext();
+			AuthCodeNode *GetParent();
+			std::string GetEmail();
+			std::string GetAuthCode();
+			void SetNext(AuthCodeNode *const next);
 			void SetParent(AuthCodeNode *const p);
+			void SetEmail(const std::string &email);
+			void SetAuthCode(const std::string &code);
 		private :
 			DISALLOW_COPY_AND_ASSIGN(AuthCodeNode);
 		private	:
 			std::string _email;
 			std::string _authcode;
-			AuthCodeNode *_lchild;
-			AuthCodeNode *_rchild;
 			AuthCodeNode *_parent;
+			AuthCodeNode *_next;
 	};
 	class AuthCodeTree {
 		//	使用平衡二叉查找树，减少查找结点的平均算法时间
@@ -83,34 +82,22 @@ class HttpRegisterAction: public RegisterAction {
 			static std::string GetAuthCode();
 			//	调用Delete方法
 			bool Search(const std::string &email, const std::string &code);
-			bool Add(const std::string &email);
 			//  添加一个新的结点，如果成功则返回true
 			//  如果这个邮箱已经对应了一个已存在的结点，则更新验证码
 			//  返回true
+			bool Add(const std::string &email);
 			bool Add(const std::string &email, const std::string &code);
 		private :
 			DISALLOW_COPY_AND_ASSIGN(AuthCodeTree);
-			bool Insert(AuthCodeNode *parent,
-					AuthCodeNode *p,
-					const std::string &email,
-					const std::string &authcode);
-			//	如果存在email和authcode在结点中匹配成功，就删除这个结点并返回true
-			bool Delete(AuthCodeNode *p, 
-					const std::string &email,
-					const std::string &authcode);
+			bool Insert(const std::string &email,const std::string &authcode);
+			//	如果存在email和authcode在结点中匹配成功,
+			//	就删除这个结点并返回true
+			bool Delete(const std::string &email,const std::string &authcode);
 			//  将parent的孩子结点设为newchild
 			//  newchild将代替oldchild成为parent的孩子
 			//  如果oldchild不是parent的孩子，则什么都不做
-			void ChangeChild(AuthCodeNode *parent,
-					AuthCodeNode *oldchild,
-					AuthCodeNode *newchild);
-			int Height(AuthCodeNode *p);
-			//  左旋
-			void RotateLeft(AuthCodeNode *r);
-			//  右旋
-			void RotateRight(AuthCodeNode *r);
 		private :
-			enum {AUTHCODELENGTH = 6};
+			enum {AUTHCODELENGTH = 6};	// 验证码长度
 			AuthCodeNode *_root;
 	};
 	AuthCodeTree *InitAtCTree();

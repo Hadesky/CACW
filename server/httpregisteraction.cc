@@ -65,7 +65,6 @@ std::string HttpRegisterAction::Register(const std::string &name,
 	printf("HttpRegisterAction::Register\nvalues : %s\n", values.c_str());
 #endif	// ! DEBUG
 	_spmysql_ptr->Insert(string("CUser"), field, values);
-
 	return std::string("000");
 }
 
@@ -85,77 +84,64 @@ std::string HttpRegisterAction::GetAuthCode(const std::string &email) {
 	return std::string("000");
 }
 
+// ******************************************************************
+// AuthCodeNode implement
 
-///////////////////////////////////////////////////////////
-// class AuthCodeNode's implemention 
-
-HttpRegisterAction::AuthCodeNode::AuthCodeNode(AuthCodeNode *const parent,
+HttpRegisterAction::AuthCodeNode::AuthCodeNode(
+		AuthCodeNode *const parent,
+		AuthCodeNode *const next,
 		const std::string &email,
-		const std::string &authcode) 
-	: _email(email),
-	_authcode(authcode),
-	_lchild(NULL),
-	_rchild(NULL),
-	_parent(parent) {
+		const std::string &code): _email(email),
+	_authcode(code),
+	_parent(parent),
+	_next(next) {
 
-	}
-
-HttpRegisterAction::AuthCodeNode::~AuthCodeNode() {
-	delete _lchild;
-	delete _rchild;
 }
 
-std::string HttpRegisterAction::AuthCodeNode::GetEmail() const {
+HttpRegisterAction::AuthCodeNode::~AuthCodeNode() {
+	delete _next;
+}
+
+HttpRegisterAction::AuthCodeNode *HttpRegisterAction::AuthCodeNode::GetNext(){
+	return _next;
+}
+
+HttpRegisterAction::AuthCodeNode *HttpRegisterAction::AuthCodeNode::GetParent() {
+	return _parent;
+}
+std::string HttpRegisterAction::AuthCodeNode::GetEmail() {
 	return _email;
 }
 
-std::string HttpRegisterAction::AuthCodeNode::GetAuthCode() const {
+std::string HttpRegisterAction::AuthCodeNode::GetAuthCode() {
 	return _authcode;
 }
-
-HttpRegisterAction::AuthCodeNode * HttpRegisterAction::AuthCodeNode::GetLeftChild() const {
-	return _lchild;
-}
-
-HttpRegisterAction::AuthCodeNode * HttpRegisterAction::AuthCodeNode::GetRightChild() const {
-	return _rchild;
-}
-
-HttpRegisterAction::AuthCodeNode *HttpRegisterAction::AuthCodeNode::GetParent() const{
-	return _parent;
-}
-
-void HttpRegisterAction::AuthCodeNode::SetEmail(const std::string &email) {
-	_email = email;		
-}
-
-void HttpRegisterAction::AuthCodeNode::SetAuthCode(const std::string &authcode) {
-	_authcode = authcode;
-}
-
-void HttpRegisterAction::AuthCodeNode::SetLeftChild(AuthCodeNode *const p) {
-	_lchild = p;
-} 
-
-void HttpRegisterAction::AuthCodeNode::SetRightChild(AuthCodeNode *const p) {
-	_rchild = p;
+void HttpRegisterAction::AuthCodeNode::SetNext(AuthCodeNode *const next) {
+	_next = next;
 }
 
 void HttpRegisterAction::AuthCodeNode::SetParent(AuthCodeNode *const p) {
 	_parent = p;
 }
 
-// end AuthCodeNode implemention
-///////////////////////////////////////////////////////////
+void HttpRegisterAction::AuthCodeNode::SetEmail(const std::string &email) {
+	_email = email;
+}
+
+void HttpRegisterAction::AuthCodeNode::SetAuthCode(const std::string &code) {
+	_authcode = code;
+}
+
+// end AuthCodeNode implement
+// ******************************************************************
 
 
-///////////////////////////////////////////////////////////
-//	AuthCodeTree implemention
+// ******************************************************************
+// AuthCodeTree implement
 
-HttpRegisterAction::AuthCodeTree::AuthCodeTree() 
-	: _root(NULL) {
-
-	}
+HttpRegisterAction::AuthCodeTree::AuthCodeTree() {
+	_root = new AuthCodeNode(NULL, NULL, "", "");
+}
 
 HttpRegisterAction::AuthCodeTree::~AuthCodeTree() {
 	delete _root;
@@ -171,203 +157,56 @@ std::string HttpRegisterAction::AuthCodeTree::GetAuthCode() {
 	return code;
 }
 
-bool HttpRegisterAction::AuthCodeTree::Search(const std::string &email, const std::string &authcode) {
-	return Delete(_root, email, authcode);
+bool HttpRegisterAction::AuthCodeTree::Search(const std::string &email,
+		const std::string &code) {
+	return Delete(email, code);
 }
 
 bool HttpRegisterAction::AuthCodeTree::Add(const std::string &email) {
-	return Insert(NULL, _root, email, GetAuthCode());
+	return Insert(email, GetAuthCode());
 }
 
-bool HttpRegisterAction::AuthCodeTree::Add(const std::string &email,
-		const std::string &code) {
-	return Insert(NULL, _root, email, code);
+bool HttpRegisterAction::AuthCodeTree::Add(const std::string &email, const std::string &code) { 
+	return Insert(email, code);
 }
 
-bool HttpRegisterAction::AuthCodeTree::Insert(AuthCodeNode *parent,
-		AuthCodeNode *p,
-		const std::string &email,
+
+bool HttpRegisterAction::AuthCodeTree::Insert(const std::string &email,
 		const std::string &authcode) {
+	AuthCodeNode *p = _root;
 	if (NULL == p) {
-		p = new AuthCodeNode(parent, email,authcode);
-		if (parent == NULL) {
-			_root = p;
-		} else {
-			ChangeChild(parent, NULL, p);
-		}
-		return true;
-	}
-	if (email == p->GetEmail()) {
-		p->SetAuthCode(authcode);
-		return true;
-	}
-	else if (email < p->GetEmail()) {
-		if(false == Insert(p, p->GetLeftChild(), email, authcode)) {
-			return false;
-		}
-		if (2 == ABS(Height(p->GetLeftChild()) - Height(p->GetRightChild())) ) {
-			//  上一步的Insert操作保证了左孩子不会为NULL
-			if (email < p->GetLeftChild()->GetEmail()) {
-				//  在左左的情况下调整
-				RotateLeft(p);
-			} else {
-				//	在左右的情况下调整
-				RotateLeft(p);
-				RotateRight(p);
-			}
-		}
-	}
-	else {
-		if (false ==  Insert(p, p->GetRightChild(), email, authcode)) {
-			return false;
-		}
-		if (2 == ABS(Height(p->GetRightChild()) - Height(p->GetLeftChild())) ) {
-			//  上一步的Insert操作保证了左孩子不会为NULL
-			if (email > p->GetLeftChild()->GetEmail()) {
-				//  在右右的情况下调整
-				RotateRight(p);
-			} else {
-				//	在右左的情况下调整
-				RotateRight(p);
-				RotateLeft(p);
-			}
-		}
-
+		p = new AuthCodeNode(NULL, NULL, "", "");
 	}
 
-	return true;
-
-}
-
-
-bool HttpRegisterAction::AuthCodeTree::Delete(AuthCodeNode *p,
-		const std::string &email,
-		const std::string &authcode) {
-	if (NULL == p) {
-		return false;
-	}
-	if (email == p->GetEmail()) {
-		if(authcode == p->GetAuthCode()) {
-			if (p->GetLeftChild() != NULL && p->GetRightChild() != NULL) {
-				//	如果有两个孩子结点
-				// 找到右子树中最小的结点
-				AuthCodeNode *temp = p->GetRightChild();
-				while (temp->GetLeftChild() != NULL) {
-					temp = temp->GetLeftChild();
-				}
-				p->SetEmail(temp->GetEmail());
-				p->SetAuthCode(temp->GetAuthCode());
-				Delete(p->GetRightChild(), temp->GetEmail(), temp->GetAuthCode());
-				if (2 == ABS(Height(p->GetLeftChild() - Height(p->GetRightChild()))) ) {
-					//	如果失衡，则只会有左右和左左两种情况，因为是在右子树删除结点。
-					if (p->GetLeftChild()->GetRightChild() != NULL && 
-							(Height(p->GetLeftChild()->GetRightChild()) 
-							 > Height(p->GetLeftChild()->GetLeftChild()))) {
-						RotateLeft(p);
-						RotateRight(p);
-					} else {
-						RotateRight(p);
-					}
-				}
-			} else {
-				if (p->GetLeftChild() != NULL) {
-					//  如果有左孩子
-					//  则将左子树作为当前结点
-					ChangeChild(p->GetParent(), p, p->GetLeftChild());
-				}
-				else if (p->GetRightChild() != NULL) {
-					//  如果有右孩子
-					//  则将右子树作为当前结点
-					ChangeChild(p->GetParent(), p, p->GetLeftChild());	
-				}
-				else {
-					ChangeChild(p->GetParent(), p, p->GetLeftChild());
-				}
-				delete p;
-			}
-
-			return false;
+	while (p->GetNext() != NULL) {
+		if (p->GetNext()->GetEmail() == email) {
+			p->GetNext()->SetAuthCode(authcode);
+			return true;
 		}
 	}
-	else if (email < p->GetEmail()) {
-		Delete(p->GetLeftChild(), email, authcode);
-		if (2 ==  ABS(Height(p->GetLeftChild()) - Height(p->GetRightChild())) ) {
-			if (p->GetLeftChild()->GetRightChild() != NULL &&
-					Height(p->GetLeftChild()->GetRightChild()) > 
-						Height(p->GetLeftChild()->GetLeftChild()) ) { 
-				RotateRight(p);
-				RotateLeft(p);
-			} else {
-				RotateLeft(p);
-			}
-		}
-	}
-	else {
-		Delete(p->GetRightChild(), email, authcode);
-		if (2 == ABS(Height(p->GetLeftChild() - Height(p->GetRightChild()))) ) {
-			if (2 == ABS(Height(p->GetLeftChild() - Height(p->GetRightChild()))) ) {
-				//	如果失衡，则只会有左右和左左两种情况，因为是在右子树删除结点。
-				if (p->GetLeftChild()->GetRightChild() != NULL && 
-						(Height(p->GetLeftChild()->GetRightChild()) 
-						 > Height(p->GetLeftChild()->GetLeftChild()))) {
-					RotateLeft(p);
-					RotateRight(p);
-				} else {
-					RotateRight(p);
-				}
-			}
-		}
-	}
-
+	AuthCodeNode *newnode = new AuthCodeNode(p, NULL, email, authcode);
+	p->SetNext(newnode);
+	
 	return true;
 }
 
-void HttpRegisterAction::AuthCodeTree::ChangeChild(AuthCodeNode *parent,
-		AuthCodeNode *oldchild,
-		AuthCodeNode *newchild) {
-	if (parent != NULL) {
-		if (parent->GetLeftChild() == oldchild) {
-			//  如果当前结点为其父结点的左孩子
-			parent->SetLeftChild(newchild);
-		} 
-		else if (parent->GetRightChild() == oldchild) {
-			parent->SetRightChild(newchild);
-		}
-		else {
-			// 如果不是右孩子也不是左孩子，就什么都不做
-			return ;
-		}
-		if (newchild != NULL) {
-			newchild->SetParent(parent);
-		}
-	} else {
-		_root = newchild;
+bool HttpRegisterAction::AuthCodeTree::Delete(const std::string &email, const std::string &authcode) {
+	AuthCodeNode *p = _root;
+	if (p == NULL) {
+		p = new AuthCodeNode(NULL, NULL, "", "");
 	}
-}
 
-int HttpRegisterAction::AuthCodeTree::Height(AuthCodeNode *p) {
-	if (NULL == p) {
-		return 0;
+	while (p->GetNext() != NULL) {
+		if (p->GetNext()->GetEmail() == email && p->GetNext()->GetAuthCode() == authcode) {
+			AuthCodeNode *oldnode = p->GetNext();
+			oldnode->GetNext()->SetParent(p);
+			p->SetNext(oldnode->GetNext());
+			delete oldnode;
+		}
 	}
-	int lh = Height(p->GetLeftChild()) + 1;
-	int rh = Height(p->GetRightChild()) + 1;
 
-	return lh > rh? lh: rh; 
+	return false;
 }
 
-void HttpRegisterAction::AuthCodeTree::RotateLeft(AuthCodeNode *p) {
-	AuthCodeNode *rchild = p->GetRightChild();
-	ChangeChild(p->GetParent(), p, p->GetLeftChild());
-	p->SetLeftChild(rchild->GetRightChild());
-	rchild->SetRightChild(p);
-}
-
-void HttpRegisterAction::AuthCodeTree::RotateRight(AuthCodeNode *p) {
-	AuthCodeNode *lchild = p->GetLeftChild();
-	ChangeChild(p->GetParent(), p, p->GetRightChild());
-	p->SetRightChild(lchild->GetLeftChild());
-	lchild->SetLeftChild(p);
-}
-
-//	end AuthCodeTree implemention
-/////////////////////////////////////////////////////
+// end AuthCodeTree implement
+// ******************************************************************
