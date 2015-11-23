@@ -34,9 +34,10 @@ namespace {
 HttpServer::HttpServer() :
 	_state_code(""),
 	_isreuseaddr(0),
-	_spmysql_ptr(){
+	_spmysql_ptr(),
+	_isinit(false){
 
-	}
+}
 
 HttpServer::~HttpServer() {
 	delete _addr_ptr;
@@ -95,11 +96,15 @@ bool HttpServer::Init(int sockfd, struct sockaddr_in *addr_ptr) {
 	if (!Listen(QLEN)) {
 		return false;
 	}
+	_isinit = true;
 
 	return true;
 }
 
 void HttpServer::Start() {
+	if (!_isinit) {
+		return ;
+	}
 	Loop();	
 	//	char buf[BUFSIZE];
 	//	struct sockaddr_in client_addr;

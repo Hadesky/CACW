@@ -127,6 +127,7 @@ class HttpServer: public Server {
 		std::string _dscrpt;
 		socklen_t _isreuseaddr;
 		boost::shared_ptr<SimpleMySql> _spmysql_ptr;
+		bool _isinit;
 };
 
 class MulThreadMsg {
