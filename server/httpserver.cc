@@ -23,7 +23,7 @@
 
 namespace {
 	//  socket waiting queue's length.
-	const int QLEN = 10;
+	const int QLEN = 512;
 
 	//  the buffer size.
 	const int BUFFSIZE = 4096;
