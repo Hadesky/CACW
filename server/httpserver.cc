@@ -37,7 +37,7 @@ HttpServer::HttpServer() :
 	_spmysql_ptr(),
 	_isinit(false){
 
-}
+	}
 
 HttpServer::~HttpServer() {
 	delete _addr_ptr;
@@ -483,6 +483,9 @@ std::string HttpServer::GetRequestContent(const std::string &request) {
 		return std::string("");
 	}
 
+
+
+
 	return request.substr(pos +strlen("\r\n\r\n"));
 }
 
@@ -495,15 +498,15 @@ void *HttpServer::Start_rtn(void *arg) {
 	pthread_detach(pthread_self());
 	MulThreadMsg *msg = (MulThreadMsg *)arg;
 	char command[BUFFSIZE];
-	read(msg->GetClientFd(), command, BUFFSIZE);
-	//		if (strlen(command) <= 0) {
-	//			continue;
-	//		}
+	std::string content;
+	//printf("client fd : %d\n", msg->GetClientFd());
+
+	int len = recv(msg->GetClientFd(), command, BUFFSIZE, 0);
+	//printf("sign is %d\n", len);
 #ifdef DEBUG
 	printf("Start_rtn command : \n%s\n", command);
 #endif	// !DEBUG
 	pthread_mutex_lock(&GetClientMutex());
-	std::string content;
 	std::string respone(msg->GetServer()->Handle(command, content));
 	std::string res(msg->GetServer()->GetHttpResponseHead("HTTP/1.1",
 				"200",
@@ -514,7 +517,10 @@ void *HttpServer::Start_rtn(void *arg) {
 	HttpServer::AddFieldInHttpResponseHead(res,
 			content_len_str + SizeToString(content.size()));
 	HttpServer::AddFieldInHttpResponseHead(res, cookie_str + respone);
-	write(msg->GetClientFd(), res.c_str(), res.size());
+	for (std::string::size_type len = 0; len < res.size();) {
+			//len += write(msg->GetClientFd(), res.c_str(), res.size());
+			len += send(msg->GetClientFd(), res.c_str(), res.size(), MSG_CONFIRM);
+	}
 	//  TO DO : add your code
 	pthread_mutex_unlock(&GetClientMutex());
 	close(msg->GetClientFd());
@@ -560,8 +566,8 @@ void HttpServer::Loop() {
 
 MulThreadMsg::MulThreadMsg(int fd, HttpServer *server):
 	_clientfd(fd), _server(server) {
-	
-}
+
+	}
 
 int MulThreadMsg::GetClientFd() {
 	return _clientfd;
