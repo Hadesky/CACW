@@ -8,6 +8,14 @@
 #include "registeraction.h"
 #include "simplemysql.h"
 
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <string.h>
+#include <unistd.h>
+
 #ifdef DEBUG
 #include <cstdio>
 #endif	// !DEBUG
@@ -16,6 +24,29 @@
 namespace {
 	unsigned int ABS(int a) {
 		return a > 0? a: -a;
+	}
+
+	// 定义一个地址类型
+	typedef struct addrinfo AddrType;
+	//	从地址中获取套接字，如果成功链接就返回对应的套接字，如果没有就返回-1
+	int Socket(AddrType *res) {
+		int fd;
+		bool reuseaddr = true;
+		while (res != NULL) {
+			fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+			if (fd > 0) {
+				if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(bool))  == 0) {
+					if (connect(fd, res->ai_addr, sizeof(struct sockaddr)) == 0){
+						return true;
+					}
+				}
+				close(fd);
+				fd = -1;
+			}
+			res = res->ai_next;
+		}
+
+		return fd;
 	}
 }
 
@@ -84,7 +115,75 @@ std::string HttpRegisterAction::GetAuthCode(const std::string &email) {
 	}
 	std::string command = "python mail.py " + email + " " + code;
 	system(command.c_str());
+	
+//	Msg *msg = new Msg(email, code);
+//	pthread_t ptid;
+//	if (pthread_create(&ptid, NULL, &Start_rtn_sendmail, (void *)msg) != 0) {
+//#ifdef DEBUG
+//		printf("fail to create phread \n");
+//#endif
+//		return std::string("001");
+//	}
+
 	return std::string("000");
+}
+
+void *HttpRegisterAction::Start_rtn_sendmail(void *arg) {
+	//  这个函数没右成功执行
+	pthread_detach(pthread_self());
+	Msg *msg = (Msg *) arg;
+	int clientfd;
+
+	AddrType *p = new AddrType;
+	if (p == NULL) {
+		return NULL;
+	}
+	memset(p, 0, sizeof(AddrType));
+	//p->ai_flags = AI_CANONNAME;
+	p->ai_family = AF_UNSPEC;
+	p->ai_socktype = SOCK_STREAM;	
+	struct addrinfo *res = NULL;
+	int n = getaddrinfo("dzyone.sinaapp.com", "80", p, &res);
+	if (n != 0) {
+		return NULL;
+	}
+	if ( (clientfd = Socket(res)) < 0) {
+		freeaddrinfo(res);
+#ifdef DEBUG 
+		printf("HttpRegisterAction::Start_rtn_sendmail:\nconnect error %d\n", clientfd);
+#endif 
+		return NULL;
+	}
+	
+//	struct sockaddr_in server_addr;
+//	memset(&server_addr, 0, sizeof(server_addr));
+//	server_addr.sin_family = AF_INET;
+//	server_addr.sin_port = htons(80);
+//	server_addr.sin_addr.s_addr = inet_addr("dzyone.sinaapp.com");
+//	
+//	clientfd = socket(AF_INET, SOCK_STREAM, 0);
+//
+//#ifdef DEBUG 
+//	printf("HttpRegisterAction::Start_rtn_sendmail:\nclientfd is %d\n", clientfd);
+//#endif
+//	if (connect(clientfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
+//#ifdef DEBUG 
+//		printf("HttpRegisterAction::Start_rtn_sendmail:\nconnect error %d\n", clientfd);
+//#endif 
+//		close(clientfd);
+//	}
+	std::string request("\
+POST http://dzyone.sinaapp.com/email.php HTTP/1.1\r\n\
+Accept-Language:zh-cn\r\n\
+Host: http://dzyone.sinaapp.com\r\n");
+	const std::string email("email: " + msg->_email + "\r\n");
+	const std::string code("code: " + msg->_authcode + "\r\n");
+	request += email + code;
+	request += "Content-Length: 0";
+
+	send(clientfd, request.c_str(), request.length(), MSG_CONFIRM);
+
+	return NULL;
 }
 
 // ******************************************************************

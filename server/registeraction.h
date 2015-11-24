@@ -49,6 +49,16 @@ class HttpRegisterAction: public RegisterAction {
 		virtual std::string GetAuthCode(const std::string &email);
 	private:
 		DISALLOW_COPY_AND_ASSIGN(HttpRegisterAction);
+		//  这个函数暂时废弃
+		static void *Start_rtn_sendmail(void *arg);
+	class Msg {
+		public :
+			Msg(const std::string &email, const std::string &authcode) :
+				_email(email), _authcode(authcode){}
+		public :
+			const std::string _email;
+			const std::string _authcode;
+	};
 	class AuthCodeNode {
 		public :
 			AuthCodeNode(
