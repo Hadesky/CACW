@@ -164,7 +164,7 @@ std::string HttpRegisterAction::GetAuthCode(const std::string &email) {
 //#ifdef DEBUG
 //		printf("fail to create phread \n");
 //#endif
-//		return std::string("001");
+//		retern std::string("001");
 //	}
 	Msg *msg = new Msg(email, code);
 	Start_rtn_sendmail((void *)msg);
@@ -305,16 +305,17 @@ bool HttpRegisterAction::AuthCodeTree::Add(const std::string &email, const std::
 
 bool HttpRegisterAction::AuthCodeTree::Insert(const std::string &email,
 		const std::string &authcode) {
-	AuthCodeNode *p = _root;
-	if (NULL == p) {
-		p = new AuthCodeNode(NULL, NULL, "", "");
+	if (NULL == _root) {
+		_root = new AuthCodeNode(NULL, NULL, "", "");
 	}
 
+	AuthCodeNode *p = _root;
 	while (p->GetNext() != NULL) {
 		if (p->GetNext()->GetEmail() == email) {
 			p->GetNext()->SetAuthCode(authcode);
 			return true;
 		}
+		p = p->GetNext();
 	}
 	AuthCodeNode *newnode = new AuthCodeNode(p, NULL, email, authcode);
 	p->SetNext(newnode);
@@ -336,6 +337,7 @@ bool HttpRegisterAction::AuthCodeTree::Delete(const std::string &email, const st
 			delete oldnode;
 			return true;
 		}
+		p = p->GetNext();
 	}
 
 	return false;

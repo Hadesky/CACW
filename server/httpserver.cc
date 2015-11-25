@@ -527,7 +527,10 @@ void *HttpServer::Start_rtn(void *arg) {
 
 	// 不能在其他地方delete，否则的话就会在线程没有执行完之前释放空
 	delete msg;
-
+#ifdef DEBUG
+	printf("Thread exit : \n");
+#endif	// !DEBUG
+	
 	return NULL;
 }
 
