@@ -10,7 +10,8 @@ create table CUser(
 	address varchar(20),
 	CONSTRAINT UQ_CUser UNIQUE(email),
 	CONSTRAINT PK_CUser PRIMARY KEY(userid),
-	CONSTRAINT CK_CUser CHECK(sex IN('男', '女'))
+	CONSTRAINT CK_CUser CHECK(sex IN('男', '女')),
+	UNIQUE INDEX ID_CUser(username)
 )engine=innodb, default charset=utf8;
 
 create table CTeam(

@@ -247,6 +247,8 @@ std::string HttpServer::Post(const std::string &command,
 	return std::string("001");
 }
 
+std::string HttpServer::Handle(const std::stri}
+
 std::string HttpServer::Handle(const std::string &request) {
 	std::string method;
 	std::string command;
