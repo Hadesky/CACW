@@ -247,7 +247,6 @@ std::string HttpServer::Post(const std::string &command,
 	return std::string("001");
 }
 
-std::string HttpServer::Handle(const std::stri}
 
 std::string HttpServer::Handle(const std::string &request) {
 	std::string method;
@@ -519,12 +518,12 @@ void *HttpServer::Start_rtn(void *arg) {
 	HttpServer::AddFieldInHttpResponseHead(res,
 			content_len_str + SizeToString(content.size()));
 	HttpServer::AddFieldInHttpResponseHead(res, cookie_str + respone);
+	pthread_mutex_unlock(&GetClientMutex());
 	for (std::string::size_type len = 0; len < res.size();) {
 			//len += write(msg->GetClientFd(), res.c_str(), res.size());
 			len += send(msg->GetClientFd(), res.c_str(), res.size(), MSG_CONFIRM);
 	}
 	//  TO DO : add your code
-	pthread_mutex_unlock(&GetClientMutex());
 	close(msg->GetClientFd());
 
 	// 不能在其他地方delete，否则的话就会在线程没有执行完之前释放空
