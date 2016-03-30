@@ -85,11 +85,13 @@ bool JsonTransverter::ToJsonString(const string &oldstr, string &newstr) {
 	return false;
 }
 
-bool JsonTransverter::ToJsonString(const std::map<string, string>&dir, string &str) {
+bool JsonTransverter::ToJsonString(const std::map<string, string>&dir,
+		string &str) {
 	static Json::StyledWriter sw;
 	Json::Value value;
 	
-	for (auto it = dir.cbegin(); it != dir.cend(); ++it) {
+	for (std::map<string, string>::const_iterator it = dir.cbegin();
+			it != dir.cend(); ++it) {
 		value[it->first] = it->second;
 	}
 	str = sw.write(value);
