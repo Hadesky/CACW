@@ -27,9 +27,13 @@ public:
     /**
      * @return NoCopyAndAssign *
      */
-    virtual NoCopyAndAssign * Clone () {
+    virtual NoCopyAndAssign *Clone () const{
 		return 0;
     }
+
+	NoCopyAndAssign *Clone(NoCopyAndAssign *dest) const {
+		return dest;
+	}
 
 private:
     /**

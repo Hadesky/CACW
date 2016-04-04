@@ -5,25 +5,6 @@
  * ********************************************************/
 
 #include "jsontransverter.h"
-#include "./include/myauto_ptr.h"
-
-JsonTransverter::JsonTransverter()
-	:_str(""){
-	
-}
-
-JsonTransverter::JsonTransverter(std::string str) 
-	: _str(str){
-
-}
-
-JsonTransverter::~JsonTransverter() {
-	
-}
-
-bool JsonTransverter::Init() {
-	return true;
-}
 
 Json::Value JsonTransverter::ParseJsonString(const string &str) {
 	static Json::Reader *pjsonparser = new Json::Reader(Json::Features::strictMode());
@@ -33,43 +14,9 @@ Json::Value JsonTransverter::ParseJsonString(const string &str) {
 	return value;
 }
 
-void JsonTransverter::ToJsonString(std::string &str) const{
-	waponx::auto_ptr<Json::Reader> pjsonparser(new Json::Reader(Json::Features::strictMode()));
-	Json::Value value;
-	Json::StyledWriter sw;
-	if (!pjsonparser->parse(_str, value)) {
-		str = "";
-	} else {
-		str = sw.write(value);
-	}
-}
-	
-//void JsonTransverter::ToJsonString(const std::string &prestr, std::string &str) {
-//	Json::Reader *pjsonparser = new Json::Reader(Json::Features::strictMode());
-//	Json::Value value;
-//	Json::StyledWriter sw;
-//	if (!pjsonparser->parse(prestr, value)) {
-//		str = "";
-//	} else {
-//		str = sw.write(value);
-//	}
-//	delete pjsonparser;
-//}
-
-void JsonTransverter::SetString(std::string str) {
-	_str = str;
-}
-	
-void JsonTransverter::GetString(std::string &str) {
-	str = _str;
-}
-
-void JsonTransverter::Append(const std::string &str) {
-	_str.append(str);
-}
-
 
 bool JsonTransverter::ToJsonString(const string &oldstr, string &newstr) {
+	// open strict mode when  old is illegal, don't assert.
 	static Json::Reader jsonparser = Json::Reader(Json::Features::strictMode());
 	static Json::Value value;
 	static Json::StyledWriter sw;
@@ -86,16 +33,32 @@ bool JsonTransverter::ToJsonString(const string &oldstr, string &newstr) {
 	return false;
 }
 
-bool JsonTransverter::ToJsonString(const std::map<string, string>&dir,
-		string &str) {
-	static Json::StyledWriter sw;
-	Json::Value value;
-	
-	for (std::map<string, string>::const_iterator it = dir.cbegin();
-			it != dir.cend(); ++it) {
-		value[it->first] = it->second;
+
+Json::Value ToJsonArray(const string &key, const std::map<string, string> &m) {
+	Json::Value res;
+	Json::Value array;
+	Json::Value item;
+	for(std::map<string, string>::const_iterator iter = m.cbegin();
+			iter != m.cend();
+			++iter) {
+		item[iter->first] = iter->second;
+		array.append(item);
 	}
-	str = sw.write(value);
+	res[key] = array;
+
+	return res;
+}
+		
+bool JsonTransverter::ToJsonString(const std::map<string, Json::Value>&m,
+		string &str) {
+	Json::Value res;
 	
+	for (std::map<string, Json::Value>::const_iterator iter = m.cbegin();
+	iter != m.cend();
+	++iter) {
+		res[iter->first] = iter->second;
+	}
+	str = res.toStyledString();
+
 	return true;
 }
