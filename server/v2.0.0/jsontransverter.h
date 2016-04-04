@@ -7,9 +7,8 @@
 #ifndef _SERVER_JSONTRANSVERTER_H
 #define _SERVER_JSONTRANSVERTER_H
 
-#include "value.h"
 #include "./json/json.h"
-
+#include "./include/NoCopyAndAssign.h"
 #include <map>
 #include <string>
 
@@ -19,7 +18,7 @@ using std::string;
 class JsonTransverter {
 public :
 	JsonTransverter();
-	JsonTransverter(std::string str);
+	explicit JsonTransverter(std::string str);
 	~JsonTransverter();
 	bool Init();
 	void ToJsonString(std::string &str) const;
@@ -31,7 +30,7 @@ public :
 	static bool ToJsonString(const string &oldstr, string &newstr);
 	static bool ToJsonString(const std::map<string, string>&dir, string &str);
 private :
-	DISALLOW_COPY_AND_ASSIGN(JsonTransverter);
+	NOCOPYANDASSIGN(JsonTransverter);
 private :
 	std::string _str;
 

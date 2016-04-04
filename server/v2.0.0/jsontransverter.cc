@@ -5,6 +5,7 @@
  * ********************************************************/
 
 #include "jsontransverter.h"
+#include "./include/myauto_ptr.h"
 
 JsonTransverter::JsonTransverter()
 	:_str(""){
@@ -33,7 +34,7 @@ Json::Value JsonTransverter::ParseJsonString(const string &str) {
 }
 
 void JsonTransverter::ToJsonString(std::string &str) const{
-	Json::Reader *pjsonparser = new Json::Reader(Json::Features::strictMode());
+	waponx::auto_ptr<Json::Reader> pjsonparser(new Json::Reader(Json::Features::strictMode()));
 	Json::Value value;
 	Json::StyledWriter sw;
 	if (!pjsonparser->parse(_str, value)) {
