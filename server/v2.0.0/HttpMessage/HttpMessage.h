@@ -20,6 +20,10 @@ namespace HttpMessage {
 	class HttpMessage : public NoCopyAndAssign
 	{
 		public:
+			/*
+			 * aviod to derived class'function cover base class's function.
+			 */
+			using NoCopyAndAssign::Clone;
 
 			/**
 			 * Empty Constructor

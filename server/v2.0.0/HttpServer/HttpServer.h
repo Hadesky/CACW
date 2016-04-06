@@ -18,7 +18,6 @@ namespace HttpServerFolder {
 class HttpServer
 {
 public:
-
   // Constructors/Destructors
   //  
 
@@ -32,23 +31,6 @@ public:
    * Empty Destructor
    */
   virtual ~HttpServer ();
-
-  // Static Public attributes
-  //  
-
-  // Public attributes
-  //  
-
-
-  // Public attribute accessor methods
-  //  
-
-
-  // Public attribute accessor methods
-  //  
-
-
-
   /**
    * @param  new_parameter listen queue's len.
    * @param  isreuseaddr mark the addr is reusable or not.

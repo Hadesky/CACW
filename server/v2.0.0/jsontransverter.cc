@@ -7,6 +7,10 @@
 #include "jsontransverter.h"
 
 Json::Value JsonTransverter::ParseJsonString(const string &str) {
+	if (str.size() <= 0) {
+		return Json::Value();
+	}
+
 	static Json::Reader *pjsonparser = new Json::Reader(Json::Features::strictMode());
 	static Json::Value value;
 	
